@@ -1,0 +1,10 @@
+services:
+  altoroj:
+    build: .
+    volumes:
+      - db:/root/altoro
+    ports:
+      - '8080:8080'
+
+volumes:
+  db:
