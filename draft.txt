@@ -1,0 +1,14 @@
+Requirements:
+- install and use project demo.testfire.net (available on github)
+- find 16 vulnerabilities and create report about them
+- fix the vulnerabilities and create test report (containing proof that vulnerability is fixed)
+
+Report content:
+- table containing names of the 16 vulnerabilities and their severity
+- table containing each vulnerability explained in detail in the form of (name, description, explanation and replication steps, impact, severity)
+- table containing the vulnerability and if it was fixed or not and the re-testing steps
+
+- Need to find 16 vulnerabilities
+  - Table containing names
+  - Table containing name, description, explanation (endpoint, body, steps), impact, severity
+  - Table containing name, reason, fix, re-test steps?
