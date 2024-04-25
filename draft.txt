@@ -1,3 +1,5 @@
+- Maybe the fact that I can transfer over my balance is considered a security vulnerability
+
 Requirements:
 - install and use project demo.testfire.net (available on github)
 - find 16 vulnerabilities and create report about them
@@ -30,15 +32,62 @@ Report content:
 - SQL injection
   - Modify the POST request of of filtered showTransactions
     to: startDate=2018-06-11&endDate=2018-06-11 23:59:59') OR 1=1 --
+    - Or run this in console: Form1.onsubmit = undefined and enter the above start date and end date
   - Impact: list transactions of all users as an unauthorized user
   - Cause: DBUtil.getTransactions() method does string concatenation in SQL query
 
-- Unauthorized access to Altoro company earnings
-  - Go to inside altoro > 2006 community annual report
+- Unauthorized file access
+  - Go to "inside altoro" > 2006 community annual report
     - Replace the url after pr/ with Q3_earnings.rtf
-  - Cause: all static assets under pr/ are served
+  - Cause: all static assets under pr/ are served since it is in WebContent
+  - Impact: unauthorized access to Altoro company earnings
 
-- Unauthorized access to Altoro confidential draft
-  - Go to inside altoro > 2006 community annual report
+- Unauthorized file access
+  - Go to "inside altoro" > 2006 community annual report
     - Replace the url after pr/ with Draft.rtf
-  - Cause: all static assets under pr/ are served
+  - Cause: all static assets under pr/ are served since it is in WebContent
+  - Impact: unauthorized access to Altoro confidential draft
+
+- Unauthorized arbitrary file access
+  - Visit http://localhost:8080/altoromutual/?content=../WEB-INF/app.properties
+    - You can replace "../WEB-INF/app.properties" with any file relative to src/WebContent/static
+  - Cause: No validation on the path is done while serving content in index.jsp
+  - Impact: the user can access any file in the WebContent directory including sensitive files in the WEB-INF directory
+
+- Lack of input validation
+  - Go to transfer funds, and transfer funds from an account to another by a value that is larger than the sender's
+    balance
+  - Cause: OperationsUtil.doServletTransfer does not check the available balance
+  - Impact: a user can have bank accounts with negative amounts of money and send money arbitrarily to other bank
+    accounts
+
+- Lack of input validation
+  - Use the following javascript, and observe negative funds get sent from 800004 to 800005:
+    username = 'jdoe';
+    password = 'demo1234';
+    res = await (
+      await fetch('/altoromutual/api/login', {
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+        body: JSON.stringify({
+          username,
+          password
+        })
+      })
+    ).json();
+
+    auth = res.Authorization;
+
+    res = await (
+      await fetch('/altoromutual/api/transfer', {
+        headers: { 'Content-Type': 'application/json', Authorization: auth },
+        method: 'POST',
+        body: JSON.stringify({
+          toAccount: '800005',
+          fromAccount: '800004',
+          transferAmount: '-2000000'
+        })
+      })
+    ).json();
+  - Cause: OperationsUtil.doApiTransfer does not do business logic checks before calling DBUtil.transferFunds
+  - Impact: users can transfer negative funds to each other
