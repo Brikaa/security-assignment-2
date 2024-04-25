@@ -91,3 +91,45 @@ Report content:
     ).json();
   - Cause: OperationsUtil.doApiTransfer does not do business logic checks before calling DBUtil.transferFunds
   - Impact: users can transfer negative funds to each other
+
+- Broken access control
+  - User the following javascript, and observe how you can fetch account details of another user:
+      username = 'jdoe';
+      password = 'demo1234';
+      res = await (
+        await fetch('/altoromutual/api/login', {
+          headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+          body: JSON.stringify({
+            username,
+            password
+          })
+        })
+      ).json();
+
+      auth = res.Authorization;
+
+      res = await (
+        await fetch('/altoromutual/api/account/800000', {
+          headers: { 'Content-Type': 'application/json', Authorization: auth },
+          method: 'GET'
+        })
+      ).json();
+  - Cause: AccountAPI.getAccountBalance() does not check whether the account belongs to the user
+  - Impact: a user can view the bank account details of another user
+
+- Broken access control
+  - Go to "View account summary" > "Go" (on any account)
+    - Then change the listAccounts URL parameter to a bank account number of another user
+  - Cause: balance.jsp does not check if the account id belongs to the logged in user
+  - Impact: a user can view the bank account details of another user
+
+- Broken access control
+  - Go to /altoromutual/admin/admin.jsp and observe how the user can access admin pages
+  - Cause: AdminFilter is given on the wrong url (/adimn/* instead of /admin/*)
+  - Impact: a user can take privileged actions as an administrator
+
+- Cross site scripting
+  - Go to http://localhost:8080/altoromutual/bank/customize.jsp?lang=%3Cbr%3E%3Cform%3E%3Clabel%3Eevil%20username%3C/label%3E%3Cinput%20type=%27text%27%3E%3Cbr%3E%3Clabel%3Eevil%20password%3C/label%3E%3Cinput%20type=%27password%27%3E%3C/form%3E and observe how an evil form was injected
+  - Cause: customize.jsp does not sanitize the request parameter before placing it on the DOM
+  - Impact: an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil form that, when submitted, can cause the victim's data to be stolen
