@@ -1,4 +1,10 @@
-- Maybe the fact that I can transfer over my balance is considered a security vulnerability
+TODO
+  - Leaking database columns in exceptions?
+  - Cookie stuff?
+  - HTTP-only cookie
+  - Unsafe request parameter
+  - Test admin account vulnerabilities
+    - Try to XSS an admin?
 
 Requirements:
 - install and use project demo.testfire.net (available on github)
@@ -104,7 +110,7 @@ Report content:
             username,
             password
           })
-        })
+        }
       ).json();
 
       auth = res.Authorization;
@@ -128,6 +134,23 @@ Report content:
   - Go to /altoromutual/admin/admin.jsp and observe how the user can access admin pages
   - Cause: AdminFilter is given on the wrong url (/adimn/* instead of /admin/*)
   - Impact: a user can take privileged actions as an administrator
+
+- Broken access control (blindly trusting cookies)
+  - Go to altoromutual/bank/transfer.jsp
+    - Run the following JavaScript script
+        evilCookie = btoa('800000~evil~101|800004~Savings~101');
+        document.cookie = `AltoroAccounts=${evilCookie}`;
+        opt = document.createElement('option');
+        opt.value = "800000";
+        opt.innerHTML = "800000 victim";
+        fromAccount.appendChild(opt);
+    - Choose "800000 victim" from the "from" dropdown list (notice that it does not belong to Jane Doe)
+    - Choose one of your accounts from the "to" dropdown list
+    - Enter an amount of money, click "Transfer money" and notice the money get transferred from the victim's account
+      to yours
+  - Cause: OperationsUtil.doServletTransfer() checks for a cookie called AltoroAccounts, and if it exists, it uses it
+    to determine the user's accounts. This cookie can be modified on the client side
+  - Impact: a user can transfer funds from any account of any other user to their account
 
 - Cross site scripting
   - Go to /altoromutual/bank/customize.jsp?lang=%3Cbr%3E%3Cform%3E%3Clabel%3Eevil%20username%3C/label%3E%3Cinput%20type=%27text%27%3E%3Cbr%3E%3Clabel%3Eevil%20password%3C/label%3E%3Cinput%20type=%27password%27%3E%3Cinput%20type=%27submit%27%3E%3C/form%3E and observe how an evil form was injected
