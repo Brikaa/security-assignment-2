@@ -1,22 +1,21 @@
 TODO
-  - Leaking database columns in exceptions?
-  - Cookie stuff?
-  - HTTP-only cookie
-  - Unsafe request parameter
+  - Repeat SQL injection
+  - Repeat input validation
+  - Repeat broken access control
   - Test admin account vulnerabilities
     - Try to XSS an admin?
 
 Requirements:
 - install and use project demo.testfire.net (available on github)
-- find 16 vulnerabilities and create report about them
+- find 18 vulnerabilities and create report about them
 - fix the vulnerabilities and create test report (containing proof that vulnerability is fixed)
 
 Report content:
-- table containing names of the 16 vulnerabilities and their severity
+- table containing names of the 18 vulnerabilities and their severity
 - table containing each vulnerability explained in detail in the form of (name, description, explanation and replication steps, impact, severity)
 - table containing the vulnerability and if it was fixed or not and the re-testing steps
 
-- Need to find 16 vulnerabilities
+- Need to find 18 vulnerabilities
   - Table containing names (vulnerabilities overview)
   - Table containing name, description, explanation (endpoint, body, steps), impact, severity (vulnerabilities report)
   - Table containing name, reason in code, fix, re-test steps? (fixing report)
@@ -64,7 +63,7 @@ Report content:
   - Go to transfer funds, and transfer funds from an account to another by a value that is larger than the sender's
     balance
   - Cause: OperationsUtil.doServletTransfer does not check the available balance
-  - Impact: a user can have bank accounts with negative amounts of money and send money arbitrarily to other bank
+  - Impact: a user can have bank accounts with negative amounts of money and can send money arbitrarily to other bank
     accounts
 
 - Lack of input validation
