@@ -83,7 +83,7 @@ Report content:
   - Impact: unauthorized access to Altoro confidential draft
 
 - Unauthorized arbitrary file access
-  - Visit http://localhost:8080/altoromutual/?content=../WEB-INF/app.properties
+  - Visit /?content=../WEB-INF/app.properties
     - You can replace "../WEB-INF/app.properties" with any file relative to src/WebContent/static
   - Cause: No validation on the path is done while serving content in index.jsp
   - Impact: the user can access any file in the WebContent directory including sensitive files in the WEB-INF directory
@@ -250,4 +250,9 @@ Report content:
 - Cross site scripting
   - Go to /altoromutual/util/serverStatusCheckService.jsp?HostName=%3Cscript%3Ealert(%22XSS%20injected%22)%3C/script%3E
   - Cause: serverStatusCheckService.jsp does not sanitize the request parameter before placing it on the DOM
+  - Impact: an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil form that, when submitted, can cause the victim's data to be stolen
+
+- Cross site scripting
+  - Go to /altoromutual/bank/queryxpath.jsp?content=queryxpath.jsp&query=%22/%3E%3Cscript%3Ealert(%27xss%20injected%27)%3C/script%3E
+  - Cause: queryxpath.jsp does not sanitize the request parameter before placing it on the DOM
   - Impact: an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil form that, when submitted, can cause the victim's data to be stolen
