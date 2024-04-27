@@ -206,8 +206,8 @@ Report content:
           method: 'GET'
         })
       ).json();
-  - Cause: AccountAPI.getAccountBalance() does not check whether the account belongs to the user
-  - Impact: a user can view the bank account details of another user
+  - Cause: AccountAPI.showLastTenTransactions() does not check whether the account belongs to the user
+  - Impact: a user can view the most recent 10 transactions of the bank account of another user
 
 - Broken access control
   - Go to "View account summary" > "Go" (on any account)
