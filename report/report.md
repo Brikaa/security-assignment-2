@@ -54,7 +54,7 @@ header-includes: |
 - **Test CVSS severity**: High
 - **Test CVSS score:** 8.7
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
-- **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/SQL_Injection>
+- **Description of the type of the vulnerability:** An attacker can access a file they should not be allowed to access
 - **Description of the vulnerability :** an attacker can download the bank's confidential earnings via visiting `/altoromutual/pr/Q3_earnings.rtf`.
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to download the bank's confidential earnings
 - **Recommendations:** put the earnings file in a directory that is not served on the internet
@@ -64,10 +64,20 @@ header-includes: |
 - **Test CVSS severity**: High
 - **Test CVSS score:** 8.7
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
-- **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/SQL_Injection>
+- **Description of the type of the vulnerability:** An attacker can access a file they should not be allowed to access
 - **Description of the vulnerability :** an attacker can download the bank's confidential draft via visiting `/altoromutual/pr/Draft.rtf`.
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to download the bank's confidential draft
 - **Recommendations:** put the draft file in a directory that is not served on the internet
+
+## Path traversal attack
+
+- **Test CVSS severity**: Critical
+- **Test CVSS score:** 9.2
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:N/VA:N/SC:H/SI:N/SA:N`
+- **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/Path_Traversal>
+- **Description of the vulnerability :** an attacker can access configuration files that can contain secrets under `WebContent/WEB-INF` by going to `/index.jsp?content=../WEB-INF/name_of_the_file` (e.g, `/index.jsp?content=../WEB-INF/app.properties`)
+- **Impact:** severe impact; successful exploitation gives the attacker the ability to access configuration files in the `WebContent/WEB-INF` directory which can contain passwords.
+- **Recommendations:** make sure paths served in `index.jsp` do not escape the parent directory (follow OWASP's recommendations in the link above).
 
 # Finding scenarios
 
@@ -147,7 +157,7 @@ SELECT COUNT(*) FROM PEOPLE WHERE USER_ID = 'asd' or 1=1 -- AND PASSWORD='anythi
 
 ### Test steps
 
-- Go to /altoromutual/bank/transaction.jsp
+- Go to `/altoromutual/bank/transaction.jsp`
 - Run the following javascript in the browser console (F12 > console):
 
   ```javascript
@@ -222,3 +232,19 @@ Everything under the `WebContent` directory and not in the `WEB-INF` directory i
 ### Cause
 
 Everything under the `WebContent` directory and not in the `WEB-INF` directory is served by Tomcat.
+
+## Path traversal attack
+
+### Test steps
+
+- Visit `/altoromutual/index.jsp?content=../WEB-INF/app.properties` and observe an application configuration file get leaked
+
+![app.properties getting leaked](image-12.png)
+
+- Visit `/altoromutual/index.jsp?content=../WEB-INF/web.xml` and observe an application configuration file get leaked
+
+![web.xml getting leaked](image-13.png)
+
+### Cause
+
+In `index.jsp`, content is served from the `static/` directory using user provided subdirectories which can include dot-dot-slashes (`../`)

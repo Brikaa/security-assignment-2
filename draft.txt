@@ -113,7 +113,7 @@ Report content:
   - Impact: unauthorized access to Altoro confidential draft
 
 - Unauthorized arbitrary file access
-  - Visit /?content=../WEB-INF/app.properties
+  - Visit /index.jsp?content=../WEB-INF/app.properties
     - You can replace "../WEB-INF/app.properties" with any file relative to src/WebContent/static
   - Cause: No validation on the path is done while serving content in index.jsp
   - Impact: the user can access any file in the WebContent directory including sensitive files in the WEB-INF directory
