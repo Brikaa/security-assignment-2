@@ -207,7 +207,7 @@
   - Impact: a user can transfer funds from any account of any other user to their account
 
 - Broken access control
-  - User the following javascript, and observe how you can fetch account details of another user:
+  - Use the following javascript, and observe how you can fetch account details of another user:
       username = 'jdoe';
       password = 'demo1234';
       res = await (

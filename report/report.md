@@ -55,7 +55,7 @@ header-includes: |
 - **Test CVSS score:** 8.7
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** An attacker can access a file they should not be allowed to access
-- **Description of the vulnerability :** an attacker can download the bank's confidential earnings via visiting `/altoromutual/pr/Q3_earnings.rtf`.
+- **Description of the vulnerability :** an attacker can download the bank's confidential earnings via visiting `/pr/Q3_earnings.rtf`.
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to download the bank's confidential earnings
 - **Recommendations:** put the earnings file in a directory that is not served on the internet
 
@@ -65,7 +65,7 @@ header-includes: |
 - **Test CVSS score:** 8.7
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** An attacker can access a file they should not be allowed to access
-- **Description of the vulnerability :** an attacker can download the bank's confidential draft via visiting `/altoromutual/pr/Draft.rtf`.
+- **Description of the vulnerability :** an attacker can download the bank's confidential draft via visiting `/pr/Draft.rtf`.
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to download the bank's confidential draft
 - **Recommendations:** put the draft file in a directory that is not served on the internet
 
@@ -129,6 +129,16 @@ header-includes: |
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to transfer an amount of money from accounts that do not belong to them
 - **Recommendations:** either do not use cookies for determining what accounts belong to the user, or add a verification signature to the cookie.
 
+## Bypassing access control (getting a foreign account details through the REST API)
+
+- **Test CVSS severity**: High
+- **Test CVSS score:** 7.1
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
+- **Description of the type of the vulnerability:** a defect in the access control (not validating who is GET'ing the account in the REST API)
+- **Description of the vulnerability :** an attacker can view the account details of another user through the `GET /api/account` endpoint
+- **Impact:** severe impact; successful exploitation gives the attacker the ability to view the details foreign accounts violating their privacy
+- **Recommendations:** do proper access control in the `GET /api/account` endpoint
+
 # Finding scenarios
 
 <!-- Fixing steps, re-test steps -->
@@ -137,7 +147,7 @@ header-includes: |
 
 ### Test steps
 
-- Open /altoromutual/login.jsp
+- Open /login.jsp
 - Login with the following credentials (password can be anything):
 
 ![Log in injected](image-2.png)
@@ -158,7 +168,6 @@ SELECT COUNT(*) FROM PEOPLE WHERE USER_ID = 'asd' or 1=1 -- AND PASSWORD='anythi
 
 ### Test steps
 
-- Open /altoromutual
 - Run the following script in your browser's dev tools' console while on the website (F12 > console):
 
   ```javascript
@@ -468,3 +477,39 @@ In `index.jsp`, content is served from the `static/` directory using user provid
 ### Cause
 
 `OperationsUtil.doServletTransfer()` checks for a cookie called `AltoroAccounts`, and if it exists, it uses it to determine the user's accounts. This cookie can be modified on the client side.
+
+## Bypassing access control (getting the account details of another user through the REST API)
+
+### Test steps
+
+Run the following script in your browser's dev tools' console while on the website (F12 > console), and observe how you can get the details of the 800000 account which does not belong to `jdoe`:
+
+```javascript
+username = 'jdoe';
+password = 'demo1234';
+res = await (
+  await fetch('/altoromutual/api/login', {
+    headers: { 'Content-Type': 'application/json' },
+    method: 'POST',
+    body: JSON.stringify({
+      username,
+      password
+    })
+  })
+).json();
+
+auth = res.Authorization;
+
+res = await (
+  await fetch('/altoromutual/api/account/800000', {
+    headers: { 'Content-Type': 'application/json', Authorization: auth },
+    method: 'GET'
+  })
+).json();
+```
+
+![Getting a foreign account details](image-28.png)
+
+### Cause
+
+`AccountAPI.getAccountBalance()` does not check whether the account in the parameter belongs to the user.
