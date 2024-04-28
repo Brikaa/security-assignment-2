@@ -286,3 +286,8 @@ Report content:
   - Go to /altoromutual/bank/queryxpath.jsp?content=queryxpath.jsp&query=%22/%3E%3Cscript%3Ealert(%27xss%20injected%27)%3C/script%3E
   - Cause: queryxpath.jsp does not sanitize the request parameter before placing it on the DOM
   - Impact: an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil form that, when submitted, can cause the victim's data to be stolen
+
+- Cross site scripting
+  - Go to /altoromutual/bank/transaction.jsp?startDate=%22/%3E%3Cscript%3Ealert(%22XSS%20injected%22)%3C/script%3E
+  - Cause: transaction.jsp does not sanitize the request parameter before placing it on the DOM
+  - Impact: an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil form that, when submitted, can cause the victim's data to be stolen
