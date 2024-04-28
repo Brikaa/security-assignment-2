@@ -15,7 +15,7 @@ header-includes: |
 - **Test CVSS score:** 9.3
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/SQL_Injection>
-- **Description of the vulnerability :** an attacker can bypass the correct username/password check in the login by having the username as `asd' or 1=1 --` and the password as anything.
+- **Description of the vulnerability :** an attacker can `bypass` the correct username/password check in the login by having the username as `asd' or 1=1 --` and the password as anything.
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to bypass login
 - **Recommendations:** use prepared statements instead of interpolating user inputs in the login SQL queries
 
@@ -78,6 +78,16 @@ header-includes: |
 - **Description of the vulnerability :** an attacker can access configuration files that can contain secrets under `WebContent/WEB-INF` by going to `/index.jsp?content=../WEB-INF/name_of_the_file` (e.g, `/index.jsp?content=../WEB-INF/app.properties`)
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to access configuration files in the `WebContent/WEB-INF` directory which can contain passwords.
 - **Recommendations:** make sure paths served in `index.jsp` do not escape the parent directory (follow OWASP's recommendations in the link above).
+
+## Business logic flaw (excessive money transfer)
+
+- **Test CVSS severity**: High
+- **Test CVSS score:** 8.6
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N`
+- **Description of the type of the vulnerability:** a defect in the business logic (lack of input validation)
+- **Description of the vulnerability :** an attacker can transfer an amount (AM) of money from their account (A) to their other account (B) even if the amount (AM) exceeds the balance in account (A).
+- **Impact:** severe impact; successful exploitation gives the attacker the ability to put an unlimited amount of money on one of their accounts and put a negative amount of money on another one of their accounts.
+- **Recommendations:** make sure the user can not transfer an amount of money that is larger than his account's balance
 
 # Finding scenarios
 
@@ -248,3 +258,35 @@ Everything under the `WebContent` directory and not in the `WEB-INF` directory i
 ### Cause
 
 In `index.jsp`, content is served from the `static/` directory using user provided subdirectories which can include dot-dot-slashes (`../`)
+
+## Business logic flaw (excessive money transfer)
+
+### Test steps
+
+- Go to `View Account Summary`:
+
+![View account summary](image-14.png)
+
+- Select an account (A) and make note of the available balance:
+
+![A available balance](image-15.png)
+
+- Select an account (B) and make note of the available balance:
+
+![B available balance](image-18.png)
+
+- Go to `Transfer Funds`, change the `To Account` and make note of it, enter an amount that is larger than the balance, click `Transfer Money`:
+
+![Transferring funds](image-16.png)
+
+- Click `Transfer Money` and notice how the operation succeeds:
+
+![Transferring funds succeeded](image-17.png)
+
+- View the available balance in account (A) and notice how it becomes negative:
+
+![Negative balance](image-19.png)
+
+- View the available balance in account (B) and notice how it increases:
+
+![Increased balance](image-20.png)
