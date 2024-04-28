@@ -49,6 +49,26 @@ header-includes: |
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to list all bank accounts on the system
 - **Recommendations:** use prepared statements instead of interpolating user inputs in the listing bank accounts SQL queries and in the authentication queries
 
+## Unauthorized file access (`Q3_earnings.rtf`)
+
+- **Test CVSS severity**: High
+- **Test CVSS score:** 8.7
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
+- **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/SQL_Injection>
+- **Description of the vulnerability :** an attacker can download the bank's confidential earnings via visiting `/altoromutual/pr/Q3_earnings.rtf`.
+- **Impact:** severe impact; successful exploitation gives the attacker the ability to download the bank's confidential earnings
+- **Recommendations:** put the earnings file in a directory that is not served on the internet
+
+## Unauthorized file access (`Draft.rtf`)
+
+- **Test CVSS severity**: High
+- **Test CVSS score:** 8.7
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
+- **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/SQL_Injection>
+- **Description of the vulnerability :** an attacker can download the bank's confidential draft via visiting `/altoromutual/pr/Draft.rtf`.
+- **Impact:** severe impact; successful exploitation gives the attacker the ability to download the bank's confidential draft
+- **Recommendations:** put the draft file in a directory that is not served on the internet
+
 # Finding scenarios
 
 <!-- Fixing steps, re-test steps -->
@@ -154,3 +174,51 @@ WHERE (ACCOUNTID = 800004)
 AND (DATE BETWEEN '2018-06-11 00:00:00' AND '2018-06-11 23:59:59')
 OR 1=1 -- 23:59:59') ORDER BY DATE DESC
 ```
+
+## Unauthorized file access (`Q3_earnings.rtf`)
+
+### Test steps
+
+- Click on "INSIDE ALTORO MUTUAL":
+
+![Inside Altoro Mutual](image-6.png)
+
+- Click on "2006 community annual report":
+
+![2006 community annual report](image-7.png)
+
+- Change the last part of the URL to `Q3_earning.rtf`:
+
+![Q3 earnings download](image-8.png)
+
+- Download and view the file:
+
+![Q3 earnings](image-9.png)
+
+### Cause
+
+Everything under the `WebContent` directory and not in the `WEB-INF` directory is served by Tomcat.
+
+## Unauthorized file access (`Draft.rtf`)
+
+### Test steps
+
+- Click on "INSIDE ALTORO MUTUAL":
+
+![Inside Altoro Mutual](image-6.png)
+
+- Click on "2006 community annual report":
+
+![2006 community annual report](image-7.png)
+
+- Change the last part of the URL to `Draft.rtf`:
+
+![Draft download](image-10.png)
+
+- Download and view the file:
+
+![Draft](image-11.png)
+
+### Cause
+
+Everything under the `WebContent` directory and not in the `WEB-INF` directory is served by Tomcat.
