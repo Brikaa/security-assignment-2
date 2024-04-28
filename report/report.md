@@ -512,6 +512,8 @@ In `index.jsp`, content is served from the `static/` directory using user provid
 
 ### Cause
 
+`balance.jsp` does not check if the account id belongs to the logged in user and the database does not filter the accounts based on the logged in user
+
 ## Bypassing access control (getting a foreign account details through the REST API)
 
 ### Test steps
@@ -546,7 +548,7 @@ res = await (
 
 ### Cause
 
-`AccountAPI.getAccountBalance()` does not check whether the account in the parameter belongs to the user.
+`AccountAPI.getAccountBalance()` does not check whether the account in the parameter belongs to the user and the database does not filter the accounts based on the user
 
 ### Test steps
 
@@ -580,4 +582,4 @@ res = await (
 
 ### Cause
 
-`AccountAPI.showLastTenTransactions()` does not check whether the account in the parameter belongs to the user.
+`AccountAPI.showLastTenTransactions()` does not check whether the account in the parameter belongs to the user and the database does not filter the transactions based on the user
