@@ -129,6 +129,16 @@ header-includes: |
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to transfer an amount of money from accounts that do not belong to them
 - **Recommendations:** either do not use cookies for determining what accounts belong to the user, or add a verification signature to the cookie.
 
+## Bypassing access control (viewing a foreign account details)
+
+- **Test CVSS severity**: High
+- **Test CVSS score:** 7.1
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
+- **Description of the type of the vulnerability:** a defect in the access control (not doing backend validation on who is viewing the account)
+- **Description of the vulnerability:** an attacker can view the account details of another user through the `/bank/showAccount` page
+- **Impact:** severe impact; successful exploitation gives the attacker the ability to view the details of foreign accounts violating their privacy
+- **Recommendations:** do backend validation before sending the data to the `/bank/showAccount` page
+
 ## Bypassing access control (getting a foreign account details through the REST API)
 
 - **Test CVSS severity**: High
@@ -139,14 +149,14 @@ header-includes: |
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to view the details foreign accounts violating their privacy
 - **Recommendations:** do proper access control in the `GET /api/account` endpoint
 
-## Bypassing access control (getting a the top ten transactions of a foreign account through the REST API)
+## Bypassing access control (getting a the last ten transactions of a foreign account through the REST API)
 
 - **Test CVSS severity**: High
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
-- **Description of the type of the vulnerability:** a defect in the access control (not validating who is GET'ing the top ten transactions of an account in the REST API)
-- **Description of the vulnerability:** an attacker can view the top ten transactions of an account of another user through the `GET /api/account` endpoint
-- **Impact:** severe impact; successful exploitation gives the attacker the ability to view the top ten transactions of foreign accounts violating their privacy
+- **Description of the type of the vulnerability:** a defect in the access control (not validating who is GET'ing the last ten transactions of an account in the REST API)
+- **Description of the vulnerability:** an attacker can view the last ten transactions of an account of another user through the `GET /api/account` endpoint
+- **Impact:** severe impact; successful exploitation gives the attacker the ability to view the last ten transactions of foreign accounts violating their privacy
 - **Recommendations:** do proper access control in the `GET /api/account/{accountNo}/transactions` endpoint
 
 # Finding scenarios
@@ -488,7 +498,21 @@ In `index.jsp`, content is served from the `static/` directory using user provid
 
 `OperationsUtil.doServletTransfer()` checks for a cookie called `AltoroAccounts`, and if it exists, it uses it to determine the user's accounts. This cookie can be modified on the client side.
 
-## Bypassing access control (getting the account details of another user through the REST API)
+## Bypassing access control (viewing a foreign account details)
+
+### Test steps
+
+- Go to "View Account Summary" > "Go" (on any account)
+
+![Account details](image-30.png)
+
+- Change the `listAccounts` URL parameter to a bank account number of another user, and observe how their account details are returned
+
+![Foreign account details](image-31.png)
+
+### Cause
+
+## Bypassing access control (getting a foreign account details through the REST API)
 
 ### Test steps
 
@@ -526,7 +550,7 @@ res = await (
 
 ### Test steps
 
-Run the following script in your browser's dev tools' console while on the website (F12 > console), and observe how you can get the top ten transactions of the 800002 account which does not belong to `jdoe`:
+Run the following script in your browser's dev tools' console while on the website (F12 > console), and observe how you can get the last ten transactions of the 800002 account which does not belong to `jdoe`:
 
 ```javascript
 username = 'jdoe';
@@ -551,6 +575,8 @@ res = await (
   })
 ).json();
 ```
+
+![Getting foreign last ten transactions](image-29.png)
 
 ### Cause
 
