@@ -1,5 +1,8 @@
 ---
 geometry: margin=2cm
+header-includes: |
+  \definecolor{bg}{HTML}{f2f2f2}
+  \pagecolor{bg}
 ---
 
 # Findings details
@@ -22,7 +25,7 @@ geometry: margin=2cm
 - **Test CVSS score:** 8.7
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/SQL_Injection>
-- **Description of the vulnerability :** an attacker can list all bank accounts on the system by passing the username as `asd' or 1=1 --` in the rest api authentication token.
+- **Description of the vulnerability :** an attacker can list all bank accounts on the system by passing the username as `asd' or 1=1 --` in the rest api authentication token and submitting a GET request to `/api/account`.
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to list all bank accounts on the system
 - **Recommendations:** use prepared statements instead of interpolating user inputs in the listing bank accounts SQL queries and in the authentication queries
 
@@ -35,6 +38,16 @@ geometry: margin=2cm
 - **Description of the vulnerability :** an attacker can list all transactions on the system by bypassing the front-end validation in the transactions filtering page and setting the start date as `2018-06-11` and the end date as `2018-06-11 23:59:59') OR 1=1 --`
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to list all transactions on the system
 - **Recommendations:** use prepared statements instead of interpolating user inputs in the transactions listing SQL queries
+
+## SQL injection in REST API (transactions)
+
+- **Test CVSS severity**: High
+- **Test CVSS score:** 7.1
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
+- **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/SQL_Injection>
+- **Description of the vulnerability :** an attacker can list all transactions on the system by setting the start date as `2018-06-11` and the end date as `2018-06-11 23:59:59') OR 1=1 --` in the transaction listing REST API endpoint (`POST /api/account/800004/transactions`)
+- **Impact:** severe impact; successful exploitation gives the attacker the ability to list all bank accounts on the system
+- **Recommendations:** use prepared statements instead of interpolating user inputs in the listing bank accounts SQL queries and in the authentication queries
 
 # Finding scenarios
 
@@ -116,25 +129,28 @@ SELECT COUNT(*) FROM PEOPLE WHERE USER_ID = 'asd' or 1=1 -- AND PASSWORD='anythi
 
 - Go to /altoromutual/bank/transaction.jsp
 - Run the following javascript in the browser console (F12 > console):
+
   ```javascript
   Form1.onsubmit = undefined;
   ```
+
 ![Bypass transactions filtering frontend validation](image.png)
 
-- Set the start date as `2018-06-11` and the end date as `2018-06-11 23:59:59') OR 1=1 --`
+- Set the start date as `2018-06-11` and the end date as `2018-06-11 23:59:59') OR 1=1 --`:
 
 ![Setting the start date and the end date of transactions filtering](image-4.png)
 
-- Click submit and observe how all of the transactions on the system are shown
+- Click submit and observe how all of the transactions on the system are shown:
 
 ![All of the transactions on the system are shown](image-5.png)
 
 ### Cause
 
-- `DBUtil.getTransactions()` method interpolates the user input in the SQL query; hence making the attacker able to execute arbitrary queries. The resulting query becomes:
-  ```sql
-  SELECT * FROM TRANSACTIONS
-  WHERE (ACCOUNTID = 800004)
-  AND (DATE BETWEEN '2018-06-11 00:00:00' AND '2018-06-11 23:59:59')
-  OR 1=1 -- 23:59:59') ORDER BY DATE DESC
-  ```
+`DBUtil.getTransactions()` method interpolates the user input in the SQL query; hence making the attacker able to execute arbitrary queries. The resulting query becomes:
+
+```sql
+SELECT * FROM TRANSACTIONS
+WHERE (ACCOUNTID = 800004)
+AND (DATE BETWEEN '2018-06-11 00:00:00' AND '2018-06-11 23:59:59')
+OR 1=1 -- 23:59:59') ORDER BY DATE DESC
+```

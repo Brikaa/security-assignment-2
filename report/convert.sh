@@ -1,1 +1,1 @@
-pandoc -f markdown-implicit_figures report.md -o report.pdf --highlight-style=tango
+pandoc -f markdown-implicit_figures report.md -o report.pdf --highlight-style=tango --number-sections
