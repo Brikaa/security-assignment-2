@@ -233,7 +233,7 @@
   - Impact: a user can view the bank account details of another user
 
 - Broken access control
-  - User the following javascript, and observe how you can list the most recent 10 transactions of the bank account of another user:
+  - Use the following javascript, and observe how you can list the most recent 10 transactions of the bank account of another user:
       username = 'jdoe';
       password = 'demo1234';
       res = await (

@@ -15,7 +15,7 @@ header-includes: |
 - **Test CVSS score:** 9.3
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/SQL_Injection>
-- **Description of the vulnerability :** an attacker can `bypass` the correct username/password check in the login by having the username as `asd' or 1=1 --` and the password as anything.
+- **Description of the vulnerability:** an attacker can `bypass` the correct username/password check in the login by having the username as `asd' or 1=1 --` and the password as anything.
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to bypass login
 - **Recommendations:** use prepared statements instead of interpolating user inputs in the login SQL queries
 
@@ -25,7 +25,7 @@ header-includes: |
 - **Test CVSS score:** 8.7
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/SQL_Injection>
-- **Description of the vulnerability :** an attacker can list all bank accounts on the system by passing the username as `asd' or 1=1 --` in the rest api authentication token and submitting a GET request to `/api/account`.
+- **Description of the vulnerability:** an attacker can list all bank accounts on the system by passing the username as `asd' or 1=1 --` in the rest api authentication token and submitting a GET request to `/api/account`.
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to list all bank accounts on the system
 - **Recommendations:** use prepared statements instead of interpolating user inputs in the listing bank accounts SQL queries and in the authentication queries
 
@@ -35,7 +35,7 @@ header-includes: |
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/SQL_Injection>
-- **Description of the vulnerability :** an attacker can list all transactions on the system by bypassing the front-end validation in the transactions filtering page and setting the start date as `2018-06-11` and the end date as `2018-06-11 23:59:59') OR 1=1 --`
+- **Description of the vulnerability:** an attacker can list all transactions on the system by bypassing the front-end validation in the transactions filtering page and setting the start date as `2018-06-11` and the end date as `2018-06-11 23:59:59') OR 1=1 --`
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to list all transactions on the system
 - **Recommendations:** use prepared statements instead of interpolating user inputs in the transactions listing SQL queries
 
@@ -45,7 +45,7 @@ header-includes: |
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/SQL_Injection>
-- **Description of the vulnerability :** an attacker can list all transactions on the system by setting the start date as `2018-06-11` and the end date as `2018-06-11 23:59:59') OR 1=1 --` in the transaction listing REST API endpoint (`POST /api/account/800004/transactions`)
+- **Description of the vulnerability:** an attacker can list all transactions on the system by setting the start date as `2018-06-11` and the end date as `2018-06-11 23:59:59') OR 1=1 --` in the transaction listing REST API endpoint (`POST /api/account/800004/transactions`)
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to list all bank accounts on the system
 - **Recommendations:** use prepared statements instead of interpolating user inputs in the listing bank accounts SQL queries and in the authentication queries
 
@@ -55,7 +55,7 @@ header-includes: |
 - **Test CVSS score:** 8.7
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** An attacker can access a file they should not be allowed to access
-- **Description of the vulnerability :** an attacker can download the bank's confidential earnings via visiting `/pr/Q3_earnings.rtf`.
+- **Description of the vulnerability:** an attacker can download the bank's confidential earnings via visiting `/pr/Q3_earnings.rtf`.
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to download the bank's confidential earnings
 - **Recommendations:** put the earnings file in a directory that is not served on the internet
 
@@ -65,7 +65,7 @@ header-includes: |
 - **Test CVSS score:** 8.7
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** An attacker can access a file they should not be allowed to access
-- **Description of the vulnerability :** an attacker can download the bank's confidential draft via visiting `/pr/Draft.rtf`.
+- **Description of the vulnerability:** an attacker can download the bank's confidential draft via visiting `/pr/Draft.rtf`.
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to download the bank's confidential draft
 - **Recommendations:** put the draft file in a directory that is not served on the internet
 
@@ -75,7 +75,7 @@ header-includes: |
 - **Test CVSS score:** 9.2
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:N/VA:N/SC:H/SI:N/SA:N`
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/Path_Traversal>
-- **Description of the vulnerability :** an attacker can access configuration files that can contain secrets under `WebContent/WEB-INF` by going to `/index.jsp?content=../WEB-INF/name_of_the_file` (e.g, `/index.jsp?content=../WEB-INF/app.properties`)
+- **Description of the vulnerability:** an attacker can access configuration files that can contain secrets under `WebContent/WEB-INF` by going to `/index.jsp?content=../WEB-INF/name_of_the_file` (e.g, `/index.jsp?content=../WEB-INF/app.properties`)
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to access configuration files in the `WebContent/WEB-INF` directory which can contain passwords.
 - **Recommendations:** make sure paths served in `index.jsp` do not escape the parent directory (follow OWASP's recommendations in the link above).
 
@@ -85,7 +85,7 @@ header-includes: |
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** a defect in the business logic (lack of input validation)
-- **Description of the vulnerability :** an attacker can transfer an amount (AM) of money from their account (A) to their other account (B) even if the amount (AM) exceeds the balance in account (A).
+- **Description of the vulnerability:** an attacker can transfer an amount (AM) of money from their account (A) to their other account (B) even if the amount (AM) exceeds the balance in account (A).
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to put an unlimited amount of money on one of their accounts and put a negative amount of money on another one of their accounts.
 - **Recommendations:** make sure the user can not transfer an amount of money that is larger than his account's balance
 
@@ -95,7 +95,7 @@ header-includes: |
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** a defect in the business logic (lack of REST API request body validation)
-- **Description of the vulnerability :** an attacker can transfer an amount (AM) of money from their account (A) to their other account (B) even if the amount (AM) exceeds the balance in account (A).
+- **Description of the vulnerability:** an attacker can transfer an amount (AM) of money from their account (A) to their other account (B) even if the amount (AM) exceeds the balance in account (A).
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to put an unlimited amount of money on one of their accounts and put a negative amount of money on another one of their accounts.
 - **Recommendations:** make sure the user can not transfer an amount of money that is larger than his account's balance through the REST API
 
@@ -105,7 +105,7 @@ header-includes: |
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** a defect in the business logic (lack of REST API request body validation)
-- **Description of the vulnerability :** an attacker can transfer a negative amount of money from their account to another account
+- **Description of the vulnerability:** an attacker can transfer a negative amount of money from their account to another account
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to transfer a negative amount of money from an account to another leading to an decrease of money in the receiving account and a increase of money in the sending account
 - **Recommendations:** make sure the user can not transfer a negative amount of money through the REST API
 
@@ -115,7 +115,7 @@ header-includes: |
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** a defect in the access control (lack of REST API request body validation)
-- **Description of the vulnerability :** an attacker can transfer an amount of money from accounts that do not belong to them
+- **Description of the vulnerability:** an attacker can transfer an amount of money from accounts that do not belong to them
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to transfer an amount of money from accounts that do not belong to them
 - **Recommendations:** make sure the user can only transfer money from their accounts
 
@@ -125,7 +125,7 @@ header-includes: |
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** a defect in the access control (treating cookies as a trusted source of truth of the authorities)
-- **Description of the vulnerability :** an attacker can transfer an amount of money from accounts that do not belong to them by modifying a cookie that represents what accounts belong to the user
+- **Description of the vulnerability:** an attacker can transfer an amount of money from accounts that do not belong to them by modifying a cookie that represents what accounts belong to the user
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to transfer an amount of money from accounts that do not belong to them
 - **Recommendations:** either do not use cookies for determining what accounts belong to the user, or add a verification signature to the cookie.
 
@@ -135,9 +135,19 @@ header-includes: |
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** a defect in the access control (not validating who is GET'ing the account in the REST API)
-- **Description of the vulnerability :** an attacker can view the account details of another user through the `GET /api/account` endpoint
+- **Description of the vulnerability:** an attacker can view the account details of another user through the `GET /api/account` endpoint
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to view the details foreign accounts violating their privacy
 - **Recommendations:** do proper access control in the `GET /api/account` endpoint
+
+## Bypassing access control (getting a the top ten transactions of a foreign account through the REST API)
+
+- **Test CVSS severity**: High
+- **Test CVSS score:** 7.1
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
+- **Description of the type of the vulnerability:** a defect in the access control (not validating who is GET'ing the top ten transactions of an account in the REST API)
+- **Description of the vulnerability:** an attacker can view the top ten transactions of an account of another user through the `GET /api/account` endpoint
+- **Impact:** severe impact; successful exploitation gives the attacker the ability to view the top ten transactions of foreign accounts violating their privacy
+- **Recommendations:** do proper access control in the `GET /api/account/{accountNo}/transactions` endpoint
 
 # Finding scenarios
 
@@ -513,3 +523,35 @@ res = await (
 ### Cause
 
 `AccountAPI.getAccountBalance()` does not check whether the account in the parameter belongs to the user.
+
+### Test steps
+
+Run the following script in your browser's dev tools' console while on the website (F12 > console), and observe how you can get the top ten transactions of the 800002 account which does not belong to `jdoe`:
+
+```javascript
+username = 'jdoe';
+password = 'demo1234';
+res = await (
+  await fetch('/altoromutual/api/login', {
+    headers: { 'Content-Type': 'application/json' },
+    method: 'POST',
+    body: JSON.stringify({
+      username,
+      password
+    })
+  })
+).json();
+
+auth = res.Authorization;
+
+res = await (
+  await fetch('/altoromutual/api/account/800002/transactions', {
+    headers: { 'Content-Type': 'application/json', Authorization: auth },
+    method: 'GET'
+  })
+).json();
+```
+
+### Cause
+
+`AccountAPI.showLastTenTransactions()` does not check whether the account in the parameter belongs to the user.
