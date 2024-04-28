@@ -1,1 +1,1 @@
-pandoc -f markdown-implicit_figures report.md -o report.pdf
+pandoc -f markdown-implicit_figures report.md -o report.pdf --highlight-style=tango
