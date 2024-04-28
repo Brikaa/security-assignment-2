@@ -109,6 +109,26 @@ header-includes: |
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to transfer a negative amount of money from an account to another leading to an decrease of money in the receiving account and a increase of money in the sending account
 - **Recommendations:** make sure the user can not transfer a negative amount of money through the REST API
 
+## Bypassing access control (sending money from a foreign account in the REST API)
+
+- **Test CVSS severity**: High
+- **Test CVSS score:** 7.1
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N`
+- **Description of the type of the vulnerability:** a defect in the access control (lack of REST API request body validation)
+- **Description of the vulnerability :** an attacker can transfer an amount of money from accounts that do not belong to them
+- **Impact:** severe impact; successful exploitation gives the attacker the ability to transfer an amount of money from accounts that do not belong to them
+- **Recommendations:** make sure the user can only transfer money from their accounts
+
+## Bypassing access control (sending money from a foreign account through cookie manipulation)
+
+- **Test CVSS severity**: High
+- **Test CVSS score:** 7.1
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N`
+- **Description of the type of the vulnerability:** a defect in the access control (treating cookies as a trusted source of truth of the authorities)
+- **Description of the vulnerability :** an attacker can transfer an amount of money from accounts that do not belong to them by modifying a cookie that represents what accounts belong to the user
+- **Impact:** severe impact; successful exploitation gives the attacker the ability to transfer an amount of money from accounts that do not belong to them
+- **Recommendations:** either do not use cookies for determining what accounts belong to the user, or add a verification signature to the cookie.
+
 # Finding scenarios
 
 <!-- Fixing steps, re-test steps -->
@@ -188,7 +208,7 @@ SELECT COUNT(*) FROM PEOPLE WHERE USER_ID = 'asd' or 1=1 -- AND PASSWORD='anythi
 ### Test steps
 
 - Go to `/altoromutual/bank/transaction.jsp`
-- Run the following javascript code in the browser console while on the website (F12 > console):
+- Run the following javascript code in the browser console while on the page (F12 > console):
 
   ```javascript
   Form1.onsubmit = undefined;
@@ -313,7 +333,7 @@ In `index.jsp`, content is served from the `static/` directory using user provid
 
 ### Cause
 
-`OperationsUtil.doServletTransfer` does not check the available balance
+`OperationsUtil.doServletTransfer` does not check the available balance.
 
 ## Business logic flaw (excessive money transfer in REST API)
 
@@ -356,7 +376,7 @@ In `index.jsp`, content is served from the `static/` directory using user provid
 
 ### Cause
 
-`OperationsUtil.doApiTransfer` does not do business logic checks before calling `DBUtil.transferFunds`
+`OperationsUtil.doApiTransfer` does not do business logic checks before calling `DBUtil.transferFunds`.
 
 ## Business logic flaw (negative money transfer in REST API)
 
@@ -399,4 +419,52 @@ In `index.jsp`, content is served from the `static/` directory using user provid
 
 ### Cause
 
-`OperationsUtil.doApiTransfer` does not do business logic checks before calling `DBUtil.transferFunds`
+`OperationsUtil.doApiTransfer` does not do business logic checks before calling `DBUtil.transferFunds`.
+
+## Bypassing access control (sending money from a foreign account in the REST API)
+
+### Test steps
+
+- Run the following script in your browser's dev tools' console while on the website (F12 > console), and observe how funds get sent from 800000 to 800004 although 800000 does not belong to the sending user:
+
+![Transferring money from a foreign account](image-23.png)
+
+- Confirm the new balances as in the previous vulnerability
+
+### Cause
+
+`OperationsUtil.doApiTransfer` does not do business logic checks before calling `DBUtil.transferFunds`.
+
+## Bypassing access control (sending money from a foreign account through cookie manipulation)
+
+### Test steps
+
+- Login with Jane Doe's account (jdoe, demo1234)
+
+- Go to `My Account` > `Transfer Funds`:
+
+![My Account > Transfer Funds](image-24.png)
+
+- Run the following javascript code in the browser console while on the page (F12 > console):
+  ```javascript
+  evilCookie = btoa('800000~evil~101|800004~Savings~101');
+  document.cookie = `AltoroAccounts=${evilCookie}`;
+  opt = document.createElement('option');
+  opt.value = '800000';
+  opt.innerHTML = '800000 victim';
+  fromAccount.appendChild(opt);
+  ```
+
+![Adding an evil cookie](image-25.png)
+
+- Choose "800000 victim" from the "from" dropdown list (notice that it does not belong to Jane Doe), choose one of your accounts from the "to" drop down list and enter an amount of money:
+
+![Transferring money from the victim](image-26.png)
+
+- Click `Transfer Money` and notice how the operation is successful:
+
+![Transferring money from the victim successful](image-27.png)
+
+### Cause
+
+`OperationsUtil.doServletTransfer()` checks for a cookie called `AltoroAccounts`, and if it exists, it uses it to determine the user's accounts. This cookie can be modified on the client side.
