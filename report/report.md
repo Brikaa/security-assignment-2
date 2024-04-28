@@ -79,7 +79,7 @@ header-includes: |
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to access configuration files in the `WebContent/WEB-INF` directory which can contain passwords.
 - **Recommendations:** make sure paths served in `index.jsp` do not escape the parent directory (follow OWASP's recommendations in the link above).
 
-## Business logic flaw (excessive money transfer)
+## Exploiting business logic flaw (excessive money transfer)
 
 - **Test CVSS severity**: High
 - **Test CVSS score:** 7.1
@@ -89,7 +89,7 @@ header-includes: |
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to put an unlimited amount of money on one of their accounts and put a negative amount of money on another one of their accounts.
 - **Recommendations:** make sure the user can not transfer an amount of money that is larger than his account's balance
 
-## Business logic flaw (excessive money transfer in REST API)
+## Exploiting business logic flaw (excessive money transfer in REST API)
 
 - **Test CVSS severity**: High
 - **Test CVSS score:** 7.1
@@ -99,7 +99,7 @@ header-includes: |
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to put an unlimited amount of money on one of their accounts and put a negative amount of money on another one of their accounts.
 - **Recommendations:** make sure the user can not transfer an amount of money that is larger than his account's balance through the REST API
 
-## Business logic flaw (negative money transfer in REST API)
+## Exploiting business logic flaw (negative money transfer in REST API)
 
 - **Test CVSS severity**: High
 - **Test CVSS score:** 7.1
@@ -158,6 +158,36 @@ header-includes: |
 - **Description of the vulnerability:** an attacker can view the last ten transactions of an account of another user through the `GET /api/account` endpoint
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to view the last ten transactions of foreign accounts violating their privacy
 - **Recommendations:** do proper access control in the `GET /api/account/{accountNo}/transactions` endpoint
+
+## Bypassing access control (accessing admin pages)
+
+- **Test CVSS severity**: High
+- **Test CVSS score:** 8.6
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N`
+- **Description of the type of the vulnerability:** a defect in the access control (improper validation on who is accessing the admin pages)
+- **Description of the vulnerability:** an attacker can view the admin pages and take admin actions by visiting `/admin/admin.jsp`
+- **Impact:** severe impact; successful exploitation gives the attacker admin privileges
+- **Recommendations:** do proper access control on admin pages and actions
+
+## Cross site scripting in `/bank/customize.jsp`
+
+- **Test CVSS severity**: High
+- **Test CVSS score:** 8.6
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N`
+- **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
+- **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `lang` parameter in `/bank/customize.jsp`
+- **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil script or form that can cause the victim's data to be stolen
+- **Recommendations:** follow OWASP's recommendations in the link in the description of the type of the vulnerability
+
+## Cross site scripting in `/bank/search.jsp`
+
+- **Test CVSS severity**: High
+- **Test CVSS score:** 8.6
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N`
+- **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
+- **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `query` parameter in `/bank/search.jsp`
+- **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil script or form that can cause the victim's data to be stolen
+- **Recommendations:** follow OWASP's recommendations in the link in the description of the type of the vulnerability
 
 # Finding scenarios
 
@@ -236,7 +266,7 @@ SELECT COUNT(*) FROM PEOPLE WHERE USER_ID = 'asd' or 1=1 -- AND PASSWORD='anythi
 
 ### Test steps
 
-- Go to `/altoromutual/bank/transaction.jsp`
+- Go to `/bank/transaction.jsp`
 - Run the following javascript code in the browser console while on the page (F12 > console):
 
   ```javascript
@@ -316,11 +346,11 @@ Everything under the `WebContent` directory and not in the `WEB-INF` directory i
 
 ### Test steps
 
-- Visit `/altoromutual/index.jsp?content=../WEB-INF/app.properties` and observe an application configuration file get leaked
+- Visit `/index.jsp?content=../WEB-INF/app.properties` and observe an application configuration file get leaked
 
 ![app.properties getting leaked](image-12.png)
 
-- Visit `/altoromutual/index.jsp?content=../WEB-INF/web.xml` and observe an application configuration file get leaked
+- Visit `/index.jsp?content=../WEB-INF/web.xml` and observe an application configuration file get leaked
 
 ![web.xml getting leaked](image-13.png)
 
@@ -328,7 +358,7 @@ Everything under the `WebContent` directory and not in the `WEB-INF` directory i
 
 In `index.jsp`, content is served from the `static/` directory using user provided subdirectories which can include dot-dot-slashes (`../`)
 
-## Business logic flaw (excessive money transfer)
+## Exploiting business logic flaw (excessive money transfer)
 
 ### Test steps
 
@@ -364,7 +394,7 @@ In `index.jsp`, content is served from the `static/` directory using user provid
 
 `OperationsUtil.doServletTransfer` does not check the available balance.
 
-## Business logic flaw (excessive money transfer in REST API)
+## Exploiting business logic flaw (excessive money transfer in REST API)
 
 ### Test steps
 
@@ -407,7 +437,7 @@ In `index.jsp`, content is served from the `static/` directory using user provid
 
 `OperationsUtil.doApiTransfer` does not do business logic checks before calling `DBUtil.transferFunds`.
 
-## Business logic flaw (negative money transfer in REST API)
+## Exploiting business logic flaw (negative money transfer in REST API)
 
 ### Test steps
 
@@ -550,6 +580,8 @@ res = await (
 
 `AccountAPI.getAccountBalance()` does not check whether the account in the parameter belongs to the user and the database does not filter the accounts based on the user
 
+## Bypassing access control (getting a the last ten transactions of a foreign account through the REST API)
+
 ### Test steps
 
 Run the following script in your browser's dev tools' console while on the website (F12 > console), and observe how you can get the last ten transactions of the 800002 account which does not belong to `jdoe`:
@@ -583,3 +615,45 @@ res = await (
 ### Cause
 
 `AccountAPI.showLastTenTransactions()` does not check whether the account in the parameter belongs to the user and the database does not filter the transactions based on the user
+
+## Bypassing access control (accessing admin pages)
+
+### Test steps
+
+- Log in as a non-admin user
+
+![Logging in as a normal user](image-32.png)
+
+- Visit /admin/admin.jsp and observe how the user can access admin pages
+
+![Accessing admin pages](image-33.png)
+
+### Cause
+
+The admin URL pattern in `AdminFilter` in `web.xml` is misspelled (`/adimn/*` instead of `/admin/*`)
+
+## Cross site scripting in `/bank/customize.jsp`
+
+### Test steps
+
+- Log in as any user (you will be the victim)
+
+- Visit `/bank/customize.jsp?lang=%3Cbr%3E%3Cform%3E%3Clabel%3Eevil%20username%3C/label%3E%3Cinput%20type=%27text%27%3E%3Cbr%3E%3Clabel%3Eevil%20password%3C/label%3E%3Cinput%20type=%27password%27%3E%3Cinput%20type=%27submit%27%3E%3C/form%3E` and observe how an evil form was injected:
+
+![Evil form in customize.jsp](image-34.png)
+
+### Cause
+
+`customize.jsp` does not sanitize the request parameter before placing it on the DOM
+
+## Cross site scripting in `/bank/search.jsp`
+
+### Test steps
+
+- You are the victim, visit `/search.jsp?query=%3Cform%3E%3Clabel%3Eevil+username%3C%2Flabel%3E%3Cinput+type%3D%22text%22%3E%3Cbr%3E%3Clabel%3Eevil+password%3C%2Flabel%3E%3Cinput+type%3D%22password%22%3E%3C%2Fform%3E` and observe how an evil form was injected:
+
+![Evil form in search.jsp](image-35.png)
+
+### Cause
+
+`search.jsp` does not sanitize the request parameter before placing it on the DOM

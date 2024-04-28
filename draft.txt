@@ -276,7 +276,7 @@
 
 - Cross site scripting
   - Go to /altoromutual/search.jsp?query=%3Cform%3E%3Clabel%3Eevil+username%3C%2Flabel%3E%3Cinput+type%3D%22text%22%3E%3Cbr%3E%3Clabel%3Eevil+password%3C%2Flabel%3E%3Cinput+type%3D%22password%22%3E%3C%2Fform%3E and observe how an evil form was injected
-  - Cause: customize.jsp does not sanitize the request parameter before placing it on the DOM
+  - Cause: search.jsp does not sanitize the request parameter before placing it on the DOM
   - Impact: an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil form that, when submitted, can cause the victim's data to be stolen
 
 - Cross site scripting
