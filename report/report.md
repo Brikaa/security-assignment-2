@@ -297,7 +297,7 @@ SELECT COUNT(*) FROM PEOPLE WHERE USER_ID = 'asd' or 1=1 -- AND PASSWORD='anythi
 ### Test steps
 
 - Go to `/bank/transaction.jsp`
-- Run the following javascript code in the browser console while on the page (F12 > console):
+- Run the following javascript code in the browser console while on the page (F12 > console) to bypass front-end validation:
 
   ```javascript
   Form1.onsubmit = undefined;
