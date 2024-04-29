@@ -1,0 +1,13 @@
+diff --git a/src/WebContent/WEB-INF/web.xml b/src/WebContent/WEB-INF/web.xml
+index b5d02e5..f0d7940 100644
+--- a/src/WebContent/WEB-INF/web.xml
++++ b/src/WebContent/WEB-INF/web.xml
+@@ -43,7 +43,7 @@
+   </filter-mapping>
+   <filter-mapping>
+     <filter-name>AdminFilter</filter-name>
+-    <url-pattern>/adimn/*</url-pattern>
++    <url-pattern>/admin/*</url-pattern>
+     <dispatcher>FORWARD</dispatcher>
+     <dispatcher>INCLUDE</dispatcher>
+     <dispatcher>REQUEST</dispatcher>
