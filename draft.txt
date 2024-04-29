@@ -1,6 +1,7 @@
 - Notes
   - Apply patches in order
   - Replace /altoromutual with the base url
+  - Additional properties not enabled. Hence some stuff were not fixed liked OS command injection
 
 - Refix
   - Fix
@@ -92,7 +93,7 @@
   - Cause: all static assets under pr/ are served since it is in WebContent
   - Impact: unauthorized access to Altoro confidential draft
 
-- Unauthorized arbitrary file access
+- Path traversal
   - Visit /index.jsp?content=../WEB-INF/app.properties
     - You can replace "../WEB-INF/app.properties" with any file relative to src/WebContent/static
   - Cause: No validation on the path is done while serving content in index.jsp

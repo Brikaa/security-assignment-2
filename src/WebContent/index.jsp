@@ -1,4 +1,6 @@
 <%@page import="java.io.BufferedReader"%>
+<%@page import="java.nio.file.Paths"%>
+<%@page import="java.nio.file.Path"%>
 <%@page import="java.io.InputStream"%>
 <%@page import="java.io.InputStreamReader"%>
 <%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil"%>
@@ -94,7 +96,13 @@ IBM AltoroJ
 	 		<% } %>
 		<% 
 		} else {
-			content = "static/"+content;
+			String basePath = "static";
+			Path resolved = Paths.get(basePath).resolve(content).normalize();
+			System.out.println(resolved);
+			if (resolved.startsWith(basePath))
+				content = resolved.toString();
+			else
+				content = "static/default.htm";
 		%>
 		
 		<%  try { %>
