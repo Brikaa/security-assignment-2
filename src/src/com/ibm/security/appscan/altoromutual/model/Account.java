@@ -34,17 +34,13 @@ public class Account {
 	private String accountName = null;
 	private double balance = -1;
 	
-	public static Account getAccount(String accountNo) throws SQLException {
+	public static Account getAccount(String accountNo, String username) throws SQLException {
 		if (accountNo == null || accountNo.trim().length() == 0)
 			return null;
 
 		long account = Long.parseLong(accountNo);
 
-		return getAccount(account);
-	}
-	
-	public static Account getAccount(long account) throws SQLException {
-		return DBUtil.getAccount(account);
+		return DBUtil.getAccount(account, username);
 	}
 	
 	public Account(long accountId, String accountName, double balance) {

@@ -59,11 +59,12 @@ public class AccountAPI extends AltoroAPI {
 		// Check that the user is logged in
 		// System.out.println(accountNo);
 		String response;
+		String userName = OperationsUtil.getUserName(request);
 
 		// not checking the account number, side privilege escalation possible
 		try {
 			// Get the account balance
-			double dblBalance = Account.getAccount(accountNo).getBalance();
+			double dblBalance = Account.getAccount(accountNo, userName).getBalance();
 			String format = (dblBalance < 1) ? "$0.00" : "$.00";
 			String balance = new DecimalFormat(format).format(dblBalance);
 			response = "{\"balance\" : \"" + balance + "\" ,\n";
@@ -73,13 +74,13 @@ public class AccountAPI extends AltoroAPI {
 		} catch (Exception e) {
 			return Response
 					.status(Response.Status.INTERNAL_SERVER_ERROR)
-					.entity("{Error : " + e.getLocalizedMessage())
+					.entity("{Error : " + e.getLocalizedMessage() + "}")
 					.build();
 		}
 
 		// Get the last 10 transactions
 		String last10Transactions;
-		last10Transactions = this.getLastTenTransactions(accountNo);
+		last10Transactions = this.getLastTenTransactions(userName, accountNo);
 		if (last10Transactions.equals("Error")) {
 			return Response
 					.status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -116,7 +117,7 @@ public class AccountAPI extends AltoroAPI {
 		response = "{";
 		// Get the last 10 transactions
 		String last10Transactions;
-		last10Transactions = this.getLastTenTransactions(accountNo);
+		last10Transactions = this.getLastTenTransactions(OperationsUtil.getUserName(request), accountNo);
 		if (last10Transactions.equals("Error")) {
 			return Response
 					.status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -166,10 +167,9 @@ public class AccountAPI extends AltoroAPI {
 
 		try {
 			Account[] account = new Account[1];
-			account[0] = user.lookupAccount(Long.parseLong(accountNo));
+			account[0] = Account.getAccount(accountNo, user.getUsername());
 
-			transactions = user.getUserTransactions(startString, endString,
-					account);
+			transactions = user.getUserTransactions(startString, endString, account);
 		} catch (SQLException e) {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
 					.entity("{Error : Database failed to return requested data} " + e.getLocalizedMessage())
@@ -207,13 +207,11 @@ public class AccountAPI extends AltoroAPI {
 	}
 
 	// utilities for the API
-	private String getLastTenTransactions(String accountNo) {
+	private String getLastTenTransactions(String userName, String accountNo) {
 		String response = "";
 		try {
 			response = response + "\"last_10_transactions\" :\n[";
-			Transaction[] transactions = DBUtil
-					.getTransactions(null, null, new Account[] { DBUtil
-							.getAccount(Long.valueOf(accountNo)) }, 10);
+			Transaction[] transactions = DBUtil.getTransactions(null, null, new Account[] { Account.getAccount(accountNo, userName) }, 10);
 			for (Transaction transaction : transactions) {
 				double dblAmt = transaction.getAmount();
 				String dollarFormat = (dblAmt < 1) ? "$0.00" : "$.00";

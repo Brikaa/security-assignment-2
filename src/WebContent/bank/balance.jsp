@@ -79,7 +79,7 @@ IBM AltoroJ
 								for (Account account: accounts){
 									out.println("<option value=\""+account.getAccountId()+"\">" + account.getAccountId() + " " + account.getAccountName() + "</option>");
 								}
-								double dblBalance = Account.getAccount(paramName).getBalance();
+								double dblBalance = Account.getAccount(paramName, user.getUsername()).getBalance();
 								String format = (dblBalance<1)?"$0.00":"$.00";
 								String balance = new DecimalFormat(format).format(dblBalance);
 							%>
@@ -109,7 +109,7 @@ IBM AltoroJ
 		    <td>
 		      <br><b>10 Most Recent Transactions</b><table border=1 cellpadding=2 cellspacing=0 width='590'><tr><th bgcolor=#cccccc width=100>Date </th><th width=290>Description</th><th width=100>Amount</th></tr></table><DIV ID='recent' STYLE='overflow: hidden; overflow-y: scroll; width:590px; height: 152px; padding:0px; margin: 0px' ><table border=1 cellpadding=2 cellspacing=0 width='574'>
 		      <%
-		      Transaction[] transactions = DBUtil.getTransactions(null, null, new Account[]{DBUtil.getAccount(Long.valueOf(paramName))}, 10);
+		      Transaction[] transactions = DBUtil.getTransactions(null, null, new Account[]{Account.getAccount(paramName, user.getUsername())}, 10);
 				for (Transaction transaction: transactions){		      
 			   		double dblAmt = transaction.getAmount();
 					String dollarFormat = (dblAmt<1)?"$0.00":"$.00";

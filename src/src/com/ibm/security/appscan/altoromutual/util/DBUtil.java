@@ -309,8 +309,8 @@ public class DBUtil {
 			Connection connection = getConnection();
 			Statement statement = connection.createStatement();
 
-			Account debitAccount = Account.getAccount(debitActId);
-			Account creditAccount = Account.getAccount(creditActId);
+			Account debitAccount = getAccount(debitActId, username);
+			Account creditAccount = getAccount(creditActId, null);
 
 			if (debitAccount == null){
 				return "Originating account is invalid";
@@ -458,19 +458,32 @@ public class DBUtil {
 		}
 	}
 	
-	public static Account getAccount(long accountNo) throws SQLException {
+	public static Account getAccount(long accountNo, String userName) throws SQLException {
 
 		Connection connection = getConnection();
-		Statement statement = connection.createStatement();
-		ResultSet resultSet =statement.executeQuery("SELECT ACCOUNT_NAME, BALANCE FROM ACCOUNTS WHERE ACCOUNT_ID = "+ accountNo +" "); /* BAD - user input should always be sanitized */
+		StringBuffer query = new StringBuffer();
+		query.append("SELECT ACCOUNT_NAME, BALANCE FROM ACCOUNTS WHERE ACCOUNT_ID = ?");
+
+		if (userName != null) {
+			query.append(" AND USERID = ?");
+		}
 
 		ArrayList<Account> accounts = new ArrayList<Account>(3);
-		while (resultSet.next()){
-			String name = resultSet.getString("ACCOUNT_NAME");
-			double balance = resultSet.getDouble("BALANCE"); 
-			Account newAccount = new Account(accountNo, name, balance);
-			accounts.add(newAccount);
+
+		try (PreparedStatement statement = connection.prepareStatement(query.toString())) {
+			statement.setString(1, String.valueOf(accountNo));
+			if (userName != null) {
+				statement.setString(2, userName);
+			}
+			ResultSet resultSet = statement.executeQuery();
+			while (resultSet.next()){
+				String name = resultSet.getString("ACCOUNT_NAME");
+				double balance = resultSet.getDouble("BALANCE");
+				Account newAccount = new Account(accountNo, name, balance);
+				accounts.add(newAccount);
+			}
 		}
+
 		
 		if (accounts.size()==0)
 			return null;

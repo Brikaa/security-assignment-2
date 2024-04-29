@@ -49,14 +49,7 @@ public class OperationsUtil {
 
 			Account debitAct = null;
 			try {
-				Account[] accounts = user.getAccounts();
-
-				for (Account account: accounts){
-					if (account.getAccountId() == debitActId){
-						debitAct = account;
-						break;
-					}
-				}
+				debitAct = DBUtil.getAccount(debitActId, userName);
 			} catch (Exception e){
 				//do nothing
 			}
@@ -89,12 +82,7 @@ public class OperationsUtil {
 			}
 			
 			if (accountId > 0) {
-				for (Account account: accounts){
-					if (account.getAccountId() == accountId){
-						debitAct = account;
-						break;
-					}
-				}
+				debitAct = DBUtil.getAccount(accountId, userName);
 			} else {
 				for (Account account: accounts){
 					if (account.getAccountName().equalsIgnoreCase(accountIdString)){
@@ -125,17 +113,19 @@ public class OperationsUtil {
 
 		return null;
 	}
-	
-	public static User getUser(HttpServletRequest request) throws SQLException{
-		
+
+	public static String getUserName(HttpServletRequest request) {
 		String accessToken = request.getHeader("Authorization").replaceAll("Bearer ", "");
 		
 		//Get username password and date 
 		String decodedToken = new String(Base64.decodeBase64(accessToken));
 		StringTokenizer tokenizer = new StringTokenizer(decodedToken,":");
 		String username = new String(Base64.decodeBase64(tokenizer.nextToken()));
-		return DBUtil.getUserInfo(username);
-		
+		return username;
+	}
+
+	public static User getUser(HttpServletRequest request) throws SQLException{
+		return DBUtil.getUserInfo(getUserName(request));
 	}
 	
 	public static String makeRandomString() {

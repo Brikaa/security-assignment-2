@@ -1,3 +1,6 @@
+- TODO
+  - get rid of Account.getAccount()?
+
 - Notes
   - Apply patches in order
   - Replace /altoromutual with the base url

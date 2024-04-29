@@ -82,14 +82,6 @@ public class User implements java.io.Serializable{
 		}
 	}
 	
-	public Account lookupAccount(Long accountNumber) {
-		for (Account account : getAccounts()) {
-			if (account.getAccountId() == accountNumber)
-				return account;
-		}
-		return null;
-	}
-	
 	public long getCreditCardNumber(){
 		for (Account account: getAccounts()){
 			if (DBUtil.CREDIT_CARD_ACCOUNT_NAME.equals(account.getAccountName()))
