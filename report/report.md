@@ -221,7 +221,7 @@ header-includes: |
 
 # Finding scenarios
 
-<!-- Fixing steps, re-test steps -->
+<!-- TODO: Fixing steps, re-test steps -->
 
 ## SQL injection in log in
 
@@ -230,11 +230,11 @@ header-includes: |
 - Open /login.jsp
 - Login with the following credentials (password can be anything):
 
-![Log in injected](image-2.png)
+![Log in injected](images/image-2.png)
 
 - Observe that you are logged in as the first user in the system:
 
-![After log in injected](image-1.png)
+![After log in injected](images/image-1.png)
 
 ### Cause
 
@@ -275,7 +275,7 @@ SELECT COUNT(*) FROM PEOPLE WHERE USER_ID = 'asd' or 1=1 -- AND PASSWORD='anythi
 
 - Observe how all bank accounts are returned:
 
-![All bank accounts returned from REST API](image-3.png)
+![All bank accounts returned from REST API](images/image-3.png)
 
 ### Cause
 
@@ -303,15 +303,15 @@ SELECT COUNT(*) FROM PEOPLE WHERE USER_ID = 'asd' or 1=1 -- AND PASSWORD='anythi
   Form1.onsubmit = undefined;
   ```
 
-![Bypass transactions filtering frontend validation](image.png)
+![Bypass transactions filtering frontend validation](images/image.png)
 
 - Set the start date as `2018-06-11` and the end date as `2018-06-11 23:59:59') OR 1=1 --`:
 
-![Setting the start date and the end date of transactions filtering](image-4.png)
+![Setting the start date and the end date of transactions filtering](images/image-4.png)
 
 - Click submit and observe how all of the transactions on the system are shown:
 
-![All of the transactions on the system are shown](image-5.png)
+![All of the transactions on the system are shown](images/image-5.png)
 
 ### Cause
 
@@ -351,7 +351,7 @@ res = await (
 ).json();
 ```
 
-![Listing all of the transactions on the system through the REST API](image-38.png)
+![Listing all of the transactions on the system through the REST API](images/image-38.png)
 
 ### Cause
 
@@ -361,19 +361,19 @@ res = await (
 
 - Click on "INSIDE ALTORO MUTUAL":
 
-![Inside Altoro Mutual](image-6.png)
+![Inside Altoro Mutual](images/image-6.png)
 
 - Click on "2006 community annual report":
 
-![2006 community annual report](image-7.png)
+![2006 community annual report](images/image-7.png)
 
 - Change the last part of the URL to `Q3_earning.rtf`:
 
-![Q3 earnings download](image-8.png)
+![Q3 earnings download](images/image-8.png)
 
 - Download and view the file:
 
-![Q3 earnings](image-9.png)
+![Q3 earnings](images/image-9.png)
 
 ### Cause
 
@@ -385,19 +385,19 @@ Everything under the `WebContent` directory and not in the `WEB-INF` directory i
 
 - Click on "INSIDE ALTORO MUTUAL":
 
-![Inside Altoro Mutual](image-6.png)
+![Inside Altoro Mutual](images/image-6.png)
 
 - Click on "2006 community annual report":
 
-![2006 community annual report](image-7.png)
+![2006 community annual report](images/image-7.png)
 
 - Change the last part of the URL to `Draft.rtf`:
 
-![Draft download](image-10.png)
+![Draft download](images/image-10.png)
 
 - Download and view the file:
 
-![Draft](image-11.png)
+![Draft](images/image-11.png)
 
 ### Cause
 
@@ -409,11 +409,11 @@ Everything under the `WebContent` directory and not in the `WEB-INF` directory i
 
 - Visit `/index.jsp?content=../WEB-INF/app.properties` and observe an application configuration file get leaked
 
-![app.properties getting leaked](image-12.png)
+![app.properties getting leaked](images/image-12.png)
 
 - Visit `/index.jsp?content=../WEB-INF/web.xml` and observe an application configuration file get leaked
 
-![web.xml getting leaked](image-13.png)
+![web.xml getting leaked](images/image-13.png)
 
 ### Cause
 
@@ -425,31 +425,31 @@ In `index.jsp`, content is served from the `static/` directory using user provid
 
 - Go to `View Account Summary`:
 
-![View account summary](image-14.png)
+![View account summary](images/image-14.png)
 
 - Select an account (A) and make note of the available balance:
 
-![A available balance](image-15.png)
+![A available balance](images/image-15.png)
 
 - Select an account (B) and make note of the available balance:
 
-![B available balance](image-18.png)
+![B available balance](images/image-18.png)
 
 - Go to `Transfer Funds`, change the `To Account` and make note of it, enter an amount that is larger than the balance, click `Transfer Money`:
 
-![Transferring funds](image-16.png)
+![Transferring funds](images/image-16.png)
 
 - Click `Transfer Money` and notice how the operation succeeds:
 
-![Transferring funds succeeded](image-17.png)
+![Transferring funds succeeded](images/image-17.png)
 
 - View the available balance in account (A) and notice how it becomes negative:
 
-![Negative balance](image-19.png)
+![Negative balance](images/image-19.png)
 
 - View the available balance in account (B) and notice how it increases:
 
-![Increased balance](image-20.png)
+![Increased balance](images/image-20.png)
 
 ### Cause
 
@@ -490,7 +490,7 @@ In `index.jsp`, content is served from the `static/` directory using user provid
   ).json();
   ```
 
-![Sending excessive funds via REST API](image-21.png)
+![Sending excessive funds via REST API](images/image-21.png)
 
 - Confirm that the funds are sent as in the previous vulnerability
 
@@ -533,7 +533,7 @@ In `index.jsp`, content is served from the `static/` directory using user provid
   ).json();
   ```
 
-![Transferring negative funds](image-22.png)
+![Transferring negative funds](images/image-22.png)
 
 - Confirm the new balances as in the previous vulnerability
 
@@ -547,7 +547,7 @@ In `index.jsp`, content is served from the `static/` directory using user provid
 
 - Run the following script in your browser's dev tools' console while on the website (F12 > console), and observe how funds get sent from 800000 to 800004 although 800000 does not belong to the sending user:
 
-![Transferring money from a foreign account](image-23.png)
+![Transferring money from a foreign account](images/image-23.png)
 
 - Confirm the new balances as in the previous vulnerability
 
@@ -563,7 +563,7 @@ In `index.jsp`, content is served from the `static/` directory using user provid
 
 - Go to `My Account` > `Transfer Funds`:
 
-![My Account > Transfer Funds](image-24.png)
+![My Account > Transfer Funds](images/image-24.png)
 
 - Run the following javascript code in the browser console while on the page (F12 > console):
   ```javascript
@@ -575,15 +575,15 @@ In `index.jsp`, content is served from the `static/` directory using user provid
   fromAccount.appendChild(opt);
   ```
 
-![Adding an evil cookie](image-25.png)
+![Adding an evil cookie](images/image-25.png)
 
 - Choose "800000 victim" from the "from" dropdown list (notice that it does not belong to Jane Doe), choose one of your accounts from the "to" drop down list and enter an amount of money:
 
-![Transferring money from the victim](image-26.png)
+![Transferring money from the victim](images/image-26.png)
 
 - Click `Transfer Money` and notice how the operation is successful:
 
-![Transferring money from the victim successful](image-27.png)
+![Transferring money from the victim successful](images/image-27.png)
 
 ### Cause
 
@@ -595,11 +595,11 @@ In `index.jsp`, content is served from the `static/` directory using user provid
 
 - Go to "View Account Summary" > "Go" (on any account)
 
-![Account details](image-30.png)
+![Account details](images/image-30.png)
 
 - Change the `listAccounts` URL parameter to a bank account number of another user, and observe how their account details are returned
 
-![Foreign account details](image-31.png)
+![Foreign account details](images/image-31.png)
 
 ### Cause
 
@@ -635,7 +635,7 @@ res = await (
 ).json();
 ```
 
-![Getting a foreign account details](image-28.png)
+![Getting a foreign account details](images/image-28.png)
 
 ### Cause
 
@@ -671,7 +671,7 @@ res = await (
 ).json();
 ```
 
-![Getting foreign last ten transactions](image-29.png)
+![Getting foreign last ten transactions](images/image-29.png)
 
 ### Cause
 
@@ -683,11 +683,11 @@ res = await (
 
 - Log in as a non-admin user
 
-![Logging in as a normal user](image-32.png)
+![Logging in as a normal user](images/image-32.png)
 
 - Visit /admin/admin.jsp and observe how the user can access admin pages
 
-![Accessing admin pages](image-33.png)
+![Accessing admin pages](images/image-33.png)
 
 ### Cause
 
@@ -701,7 +701,7 @@ The admin URL pattern in `AdminFilter` in `web.xml` is misspelled (`/adimn/*` in
 
 - Visit `/bank/customize.jsp?lang=%3Cbr%3E%3Cform%3E%3Clabel%3Eevil%20username%3C/label%3E%3Cinput%20type=%27text%27%3E%3Cbr%3E%3Clabel%3Eevil%20password%3C/label%3E%3Cinput%20type=%27password%27%3E%3Cinput%20type=%27submit%27%3E%3C/form%3E` and observe how an evil form was injected:
 
-![XSS in customize.jsp](image-34.png)
+![XSS in customize.jsp](images/image-34.png)
 
 ### Cause
 
@@ -713,7 +713,7 @@ The admin URL pattern in `AdminFilter` in `web.xml` is misspelled (`/adimn/*` in
 
 - You are the victim, visit `/search.jsp?query=%3Cform%3E%3Clabel%3Eevil+username%3C%2Flabel%3E%3Cinput+type%3D%22text%22%3E%3Cbr%3E%3Clabel%3Eevil+password%3C%2Flabel%3E%3Cinput+type%3D%22password%22%3E%3C%2Fform%3E` and observe how an evil form was injected:
 
-![XSS in search.jsp](image-35.png)
+![XSS in search.jsp](images/image-35.png)
 
 ### Cause
 
@@ -725,7 +725,7 @@ The admin URL pattern in `AdminFilter` in `web.xml` is misspelled (`/adimn/*` in
 
 - You are the victim, visit `/util/serverStatusCheckService.jsp?HostName=%3Cscript%3Ealert(%22XSS%20injected%22)%3C/script%3E` and observe how an arbitrary script is run
 
-![XSS in serverStatusCheckService.jsp](image-36.png)
+![XSS in serverStatusCheckService.jsp](images/image-36.png)
 
 ### Cause
 
@@ -739,7 +739,7 @@ The admin URL pattern in `AdminFilter` in `web.xml` is misspelled (`/adimn/*` in
 
 - Visit `/bank/queryxpath.jsp?content=queryxpath.jsp&query=%22/%3E%3Cscript%3Ealert(%27xss%20injected%27)%3C/script%3E` and observe how an arbitrary script is run
 
-![XSS in queryxpath.jsp](image-37.png)
+![XSS in queryxpath.jsp](images/image-37.png)
 
 ### Cause
 
@@ -753,7 +753,7 @@ The admin URL pattern in `AdminFilter` in `web.xml` is misspelled (`/adimn/*` in
 
 - Visit `/bank/transaction.jsp?startDate=%22/%3E%3Cscript%3Ealert(%22XSS%20injected%22)%3C/script%3E` and observe how an arbitrary script is run
 
-![XSS in transaction.jsp](image-39.png)
+![XSS in transaction.jsp](images/image-39.png)
 
 ### Cause
 
