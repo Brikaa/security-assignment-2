@@ -317,6 +317,12 @@ SELECT COUNT(*) FROM PEOPLE WHERE USER_ID = 'asd' or 1=1 -- AND PASSWORD='anythi
 
 `DBUtil.getTransactions()` method interpolates the user input in the SQL query; hence making the attacker able to execute arbitrary queries. The resulting query becomes:
 
+```sql
+SELECT * FROM TRANSACTIONS
+WHERE (ACCOUNTID = "whatever" OR ACCOUNTID = "whatever")
+AND (DATE BETWEEN '2018-06-11' AND '2018-06-11 23:59:59') OR 1=1 --') ORDER BY DATE DESC
+```
+
 ## SQL injection in REST API (transactions)
 
 ### Test steps
@@ -354,6 +360,14 @@ res = await (
 ![Listing all of the transactions on the system through the REST API](images/image-38.png)
 
 ### Cause
+
+`DBUtil.getTransactions()` method interpolates the user input in the SQL query; hence making the attacker able to execute arbitrary queries. The resulting query becomes:
+
+```sql
+SELECT * FROM TRANSACTIONS
+WHERE (ACCOUNTID = "whatever" OR ACCOUNTID = "whatever")
+AND (DATE BETWEEN '2018-06-11' AND '2018-06-11 23:59:59') OR 1=1 --') ORDER BY DATE DESC
+```
 
 ## Unauthorized file access (`Q3_earnings.rtf`)
 
