@@ -1,0 +1,30 @@
+diff --git a/src/WebContent/bank/balance.jsp b/src/WebContent/bank/balance.jsp
+index 6314d98..99543ac 100644
+--- a/src/WebContent/bank/balance.jsp
++++ b/src/WebContent/bank/balance.jsp
+@@ -39,16 +39,24 @@ IBM AltoroJ
+ 					ArrayList<Account> accounts = new ArrayList<Account>();
+ 					java.lang.String paramName = request.getParameter("acctId");
+ 					String accountName = paramName;
++					boolean found = false;
++					Account[] userAccounts = user.getAccounts();
+ 													
+-					for (Account account: user.getAccounts()){
++					for (Account account: userAccounts){
+ 						
+ 						if (!String.valueOf(account.getAccountId()).equals(paramName))
+ 							accounts.add(account);
+ 						else {
++							found = true;
+ 							accounts.add(0, account);
+ 							accountName = account.getAccountId() + " " + account.getAccountName();
+ 						}
+ 					}
++
++					if (!found) {
++						paramName = String.valueOf(userAccounts[0].getAccountId());
++						accountName = paramName;
++					}
+ 				%>
+ 		
+ 		<!-- To modify account information do not connect to SQL source directly.  Make all changes

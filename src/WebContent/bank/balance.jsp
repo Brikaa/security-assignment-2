@@ -39,15 +39,23 @@ IBM AltoroJ
 					ArrayList<Account> accounts = new ArrayList<Account>();
 					java.lang.String paramName = request.getParameter("acctId");
 					String accountName = paramName;
+					boolean found = false;
+					Account[] userAccounts = user.getAccounts();
 													
-					for (Account account: user.getAccounts()){
+					for (Account account: userAccounts){
 						
 						if (!String.valueOf(account.getAccountId()).equals(paramName))
 							accounts.add(account);
 						else {
+							found = true;
 							accounts.add(0, account);
 							accountName = account.getAccountId() + " " + account.getAccountName();
 						}
+					}
+
+					if (!found) {
+						paramName = String.valueOf(userAccounts[0].getAccountId());
+						accountName = paramName;
 					}
 				%>
 		
