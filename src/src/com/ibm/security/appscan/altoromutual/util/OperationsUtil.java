@@ -14,20 +14,54 @@ import com.ibm.security.appscan.altoromutual.model.User;
 
 public class OperationsUtil {
 
+	private static String transferAndGetMessage(String userName, long creditActId, Account debitAct, double amount) {
+		//we will not send an error immediately, but we need to have an indication when one occurs...
+		String message = null;
+		if (creditActId < 0){
+			message = "Destination account is invalid";
+		} else if (debitAct == null) {
+			message = "Originating account is invalid";
+		} else if (amount < 0){
+			message = "Transfer amount is invalid";
+		} else if (amount > debitAct.getBalance()){
+			message = "Insufficient balance in originating account";
+		}
+
+		//if transfer amount is zero then there is nothing to do
+		if (message == null && amount > 0){
+			message = DBUtil.transferFunds(userName, creditActId, debitAct.getAccountId(), amount);
+		}
+		if (message != null){
+			message = "ERROR: " + message;
+		} else {
+			message = amount + " was successfully transferred from Account " + debitAct.getAccountId() + " into Account " + creditActId + " at " + new SimpleDateFormat().format(new Date()) + ".";
+		}
+
+		return message;
+	}
+
 	public static String doApiTransfer(HttpServletRequest request, long creditActId, long debitActId,
 			double amount) {
 		
 		try {
 			User user = OperationsUtil.getUser(request);
 			String userName = user.getUsername();
-			String message = DBUtil.transferFunds(userName, creditActId, debitActId, amount);
-			if (message != null){
-				message = "ERROR: " + message;
-			} else {
-				message = amount + " was successfully transferred from Account " + debitActId + " into Account " + creditActId + " at " + new SimpleDateFormat().format(new Date()) + ".";
+
+			Account debitAct = null;
+			try {
+				Account[] accounts = user.getAccounts();
+
+				for (Account account: accounts){
+					if (account.getAccountId() == debitActId){
+						debitAct = account;
+						break;
+					}
+				}
+			} catch (Exception e){
+				//do nothing
 			}
 			
-			return message;
+			return transferAndGetMessage(userName, creditActId, debitAct, amount);
 			
 		} catch (SQLException e) {
 			return "ERROR - failed to transfer funds: " + e.getLocalizedMessage();
@@ -74,30 +108,7 @@ public class OperationsUtil {
 			//do nothing
 		}
 		
-		//we will not send an error immediately, but we need to have an indication when one occurs...
-		String message = null;
-		if (creditActId < 0){
-			message = "Destination account is invalid";
-		} else if (debitAct == null) {
-			message = "Originating account is invalid";
-		} else if (amount < 0){
-			message = "Transfer amount is invalid";
-		} else if (amount > debitAct.getBalance()){
-			message = "Insufficient balance in originating account";
-		}
-		
-		//if transfer amount is zero then there is nothing to do
-		if (message == null && amount > 0){
-			message = DBUtil.transferFunds(userName, creditActId, debitAct.getAccountId(), amount);
-		}
-		
-		if (message != null){
-			message = "ERROR: " + message;
-		} else {
-			message = amount + " was successfully transferred from Account " + debitAct.getAccountId() + " into Account " + creditActId + " at " + new SimpleDateFormat().format(new Date()) + ".";
-		}
-		
-		return message;
+		return transferAndGetMessage(userName, creditActId, debitAct, amount);
 	}
 
 	public static String sendFeedback(String name, String email,
