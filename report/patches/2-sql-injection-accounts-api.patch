@@ -1,0 +1,65 @@
+diff --git a/src/src/com/ibm/security/appscan/altoromutual/util/DBUtil.java b/src/src/com/ibm/security/appscan/altoromutual/util/DBUtil.java
+index c7df6a3..0de05f2 100644
+--- a/src/src/com/ibm/security/appscan/altoromutual/util/DBUtil.java
++++ b/src/src/com/ibm/security/appscan/altoromutual/util/DBUtil.java
+@@ -238,17 +238,19 @@ public class DBUtil {
+ 		if (username == null || username.trim().length() == 0)
+ 			return null; 
+ 		
+-		Connection connection = getConnection();
+-		Statement statement = connection.createStatement();
+-		ResultSet resultSet =statement.executeQuery("SELECT FIRST_NAME,LAST_NAME,ROLE FROM PEOPLE WHERE USER_ID = '"+ username +"' "); /* BAD - user input should always be sanitized */
+-
+ 		String firstName = null;
+ 		String lastName = null;
+ 		String roleString = null;
+-		if (resultSet.next()){
+-			firstName = resultSet.getString("FIRST_NAME");
+-			lastName = resultSet.getString("LAST_NAME");
+-			roleString = resultSet.getString("ROLE");
++
++		Connection connection = getConnection();
++		try (PreparedStatement statement = connection.prepareStatement("SELECT FIRST_NAME,LAST_NAME,ROLE FROM PEOPLE WHERE USER_ID = ?")) {
++			statement.setString(1, username);
++			ResultSet resultSet = statement.executeQuery();
++			if (resultSet.next()){
++				firstName = resultSet.getString("FIRST_NAME");
++				lastName = resultSet.getString("LAST_NAME");
++				roleString = resultSet.getString("ROLE");
++			}
+ 		}
+ 		
+ 		if (firstName == null || lastName == null)
+@@ -273,19 +275,21 @@ public class DBUtil {
+ 			return null; 
+ 		
+ 		Connection connection = getConnection();
+-		Statement statement = connection.createStatement();
+-		ResultSet resultSet =statement.executeQuery("SELECT ACCOUNT_ID, ACCOUNT_NAME, BALANCE FROM ACCOUNTS WHERE USERID = '"+ username +"' "); /* BAD - user input should always be sanitized */
++		try (PreparedStatement statement = connection.prepareStatement("SELECT ACCOUNT_ID, ACCOUNT_NAME, BALANCE FROM ACCOUNTS WHERE USERID = ?")) {
++			statement.setString(1, username);
++			ResultSet resultSet = statement.executeQuery();
+ 
+-		ArrayList<Account> accounts = new ArrayList<Account>(3);
+-		while (resultSet.next()){
+-			long accountId = resultSet.getLong("ACCOUNT_ID");
+-			String name = resultSet.getString("ACCOUNT_NAME");
+-			double balance = resultSet.getDouble("BALANCE"); 
+-			Account newAccount = new Account(accountId, name, balance);
+-			accounts.add(newAccount);
++			ArrayList<Account> accounts = new ArrayList<Account>(3);
++			while (resultSet.next()){
++				long accountId = resultSet.getLong("ACCOUNT_ID");
++				String name = resultSet.getString("ACCOUNT_NAME");
++				double balance = resultSet.getDouble("BALANCE"); 
++				Account newAccount = new Account(accountId, name, balance);
++				accounts.add(newAccount);
++			}
++			
++			return accounts.toArray(new Account[accounts.size()]);
+ 		}
+-		
+-		return accounts.toArray(new Account[accounts.size()]);
+ 	}
+ 
+ 	/**

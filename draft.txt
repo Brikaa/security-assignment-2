@@ -1,3 +1,7 @@
+- Notes
+  - Apply patches in order
+  - Replace /altoromutual with the base url
+
 - Refix
   - Fix
   - Save patch
