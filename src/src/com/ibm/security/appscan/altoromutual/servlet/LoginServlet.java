@@ -20,7 +20,6 @@ package com.ibm.security.appscan.altoromutual.servlet;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -89,10 +88,8 @@ public class LoginServlet extends HttpServlet {
 			return;
 		}
 
-		//Handle the cookie using ServletUtil.establishSession(String)
 		try{
-			Cookie accountCookie = ServletUtil.establishSession(username,session);
-			response.addCookie(accountCookie);
+			ServletUtil.establishSession(username,session);
 			response.sendRedirect(request.getContextPath()+"/bank/main.jsp");
 			}
 		catch (Exception ex){

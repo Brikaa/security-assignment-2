@@ -34,7 +34,6 @@ import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -64,8 +63,6 @@ public class ServletUtil {
 	public static HashMap<String, String> demoProperties = null;
 	public static File logFile = null;
 	public static boolean swaggerInitialized = false;
-
-	public static final String ALTORO_COOKIE = "AltoroAccounts";
 
 	public static final String EMAIL_REGEXP = "^..*@..*\\...*$";
 
@@ -337,18 +334,14 @@ public class ServletUtil {
 		}
 	}
 
-	public static Cookie establishSession(String username, HttpSession session){
+	public static void establishSession(String username, HttpSession session){
 		try{
 			User user = DBUtil.getUserInfo(username);
 			Account[] accounts = user.getAccounts();
-		    String accountStringList = Account.toBase64List(accounts);
-		    Cookie accountCookie = new Cookie(ServletUtil.ALTORO_COOKIE, accountStringList);
 			session.setAttribute(ServletUtil.SESSION_ATTR_USER, user);
-		    return accountCookie;
 		}
 		catch(SQLException e){
 			e.printStackTrace();
-			return null;
 		}
 	}
 	

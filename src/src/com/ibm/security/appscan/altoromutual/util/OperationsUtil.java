@@ -6,7 +6,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
 import java.util.StringTokenizer;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -39,31 +38,15 @@ public class OperationsUtil {
 	public static String doServletTransfer(HttpServletRequest request, long creditActId, String accountIdString,
 			double amount) {
 		
-		long debitActId = 0;
+		Account debitAct = null;
 
 		User user = ServletUtil.getUser(request);
 		String userName = user.getUsername();
 		
 		try {
 			Long accountId = -1L;
-			Cookie[] cookies = request.getCookies();
 			
-			Cookie altoroCookie = null;
-			
-			for (Cookie cookie: cookies){
-				if (ServletUtil.ALTORO_COOKIE.equals(cookie.getName())){
-					altoroCookie = cookie;
-					break;
-				}
-			}
-			
-			Account[] cookieAccounts = null;
-			if (altoroCookie == null)
-				cookieAccounts = user.getAccounts();			
-			else
-				cookieAccounts = Account.fromBase64List(altoroCookie.getValue());
-			
-			
+			Account[] accounts = user.getAccounts();
 			
 			try {
 				accountId = Long.parseLong(accountIdString);
@@ -72,16 +55,16 @@ public class OperationsUtil {
 			}
 			
 			if (accountId > 0) {
-				for (Account account: cookieAccounts){
+				for (Account account: accounts){
 					if (account.getAccountId() == accountId){
-						debitActId = account.getAccountId();
+						debitAct = account;
 						break;
 					}
 				}
 			} else {
-				for (Account account: cookieAccounts){
+				for (Account account: accounts){
 					if (account.getAccountName().equalsIgnoreCase(accountIdString)){
-						debitActId = account.getAccountId();
+						debitAct = account;
 						break;
 					}
 				}
@@ -95,22 +78,23 @@ public class OperationsUtil {
 		String message = null;
 		if (creditActId < 0){
 			message = "Destination account is invalid";
-		} else if (debitActId < 0) {
+		} else if (debitAct == null) {
 			message = "Originating account is invalid";
 		} else if (amount < 0){
 			message = "Transfer amount is invalid";
+		} else if (amount > debitAct.getBalance()){
+			message = "Insufficient balance in originating account";
 		}
 		
 		//if transfer amount is zero then there is nothing to do
 		if (message == null && amount > 0){
-			//Notice that available balance is not checked
-			message = DBUtil.transferFunds(userName, creditActId, debitActId, amount);
+			message = DBUtil.transferFunds(userName, creditActId, debitAct.getAccountId(), amount);
 		}
 		
 		if (message != null){
 			message = "ERROR: " + message;
 		} else {
-			message = amount + " was successfully transferred from Account " + debitActId + " into Account " + creditActId + " at " + new SimpleDateFormat().format(new Date()) + ".";
+			message = amount + " was successfully transferred from Account " + debitAct.getAccountId() + " into Account " + creditActId + " at " + new SimpleDateFormat().format(new Date()) + ".";
 		}
 		
 		return message;
