@@ -1,0 +1,36 @@
+diff --git a/src/src/com/ibm/security/appscan/altoromutual/util/DBUtil.java b/src/src/com/ibm/security/appscan/altoromutual/util/DBUtil.java
+index 3031aa8..c7df6a3 100644
+--- a/src/src/com/ibm/security/appscan/altoromutual/util/DBUtil.java
++++ b/src/src/com/ibm/security/appscan/altoromutual/util/DBUtil.java
+@@ -29,6 +29,7 @@ import java.util.ArrayList;
+ import javax.naming.Context;
+ import javax.naming.InitialContext;
+ import javax.sql.DataSource;
++import java.sql.PreparedStatement;
+ 
+ import com.ibm.security.appscan.Log4AltoroJ;
+ import com.ibm.security.appscan.altoromutual.model.Account;
+@@ -214,16 +215,16 @@ public class DBUtil {
+ 			return false; 
+ 		
+ 		Connection connection = getConnection();
+-		Statement statement = connection.createStatement();
+-		
+-		ResultSet resultSet =statement.executeQuery("SELECT COUNT(*)FROM PEOPLE WHERE USER_ID = '"+ user +"' AND PASSWORD='" + password + "'"); /* BAD - user input should always be sanitized */
+-		
+-		if (resultSet.next()){
+-			
++		try (PreparedStatement statement = connection.prepareStatement("SELECT COUNT(*) FROM PEOPLE WHERE USER_ID = ? AND PASSWORD = ?")) {
++			statement.setString(1, user);
++			statement.setString(2, password);
++			ResultSet resultSet = statement.executeQuery();
++			if (resultSet.next()){
+ 				if (resultSet.getInt(1) > 0)
+ 					return true;
++			}
++			return false;
+ 		}
+-		return false;
+ 	}
+ 	
+ 
