@@ -177,7 +177,7 @@ header-includes: |
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
 - **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `lang` parameter in `/bank/customize.jsp`
 - **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil script or form that can cause the victim's data to be stolen
-- **Recommendations:** follow OWASP's recommendations in the link in the description of the type of the vulnerability
+- **Recommendations:** <https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html>
 
 ## Cross site scripting in `/search.jsp`
 
@@ -187,7 +187,7 @@ header-includes: |
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
 - **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `query` parameter in `/search.jsp`
 - **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil script or form that can cause the victim's data to be stolen
-- **Recommendations:** follow OWASP's recommendations in the link in the description of the type of the vulnerability
+- **Recommendations:** <https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html>
 
 ## Cross site scripting in `/util/serverStatusCheckService.jsp`
 
@@ -197,7 +197,7 @@ header-includes: |
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
 - **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `HostName` parameter in `/util/serverStatusCheckService.jsp`
 - **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil script or form that can cause the victim's data to be stolen
-- **Recommendations:** follow OWASP's recommendations in the link in the description of the type of the vulnerability
+- **Recommendations:** <https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html>
 
 ## Cross site scripting in `/bank/queryxpath.jsp`
 
@@ -207,7 +207,7 @@ header-includes: |
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
 - **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `content` parameter in `/bank/queryxpath.jsp`
 - **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil script or form that can cause the victim's data to be stolen
-- **Recommendations:** follow OWASP's recommendations in the link in the description of the type of the vulnerability
+- **Recommendations:** <https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html>
 
 ## Cross site scripting in `/bank/transaction.jsp`
 
@@ -217,7 +217,17 @@ header-includes: |
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
 - **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `startDate` or `endDate` parameter in `/bank/transaction.jsp`
 - **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil script or form that can cause the victim's data to be stolen
-- **Recommendations:** follow OWASP's recommendations in the link in the description of the type of the vulnerability
+- **Recommendations:** <https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html>
+
+## Cross site scripting in `/bank/feedbacksuccess.jsp`
+
+- **Test CVSS severity**: High
+- **Test CVSS score:** 8.6
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N`
+- **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
+- **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `email_addr` parameter in `/bank/feedbacksuccess.jsp`
+- **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but it can contain an form that can cause the victim's data to be stolen
+- **Recommendations:** <https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html>
 
 # Finding scenarios
 
@@ -800,4 +810,16 @@ The admin URL pattern in `AdminFilter` in `web.xml` is misspelled (`/adimn/*` in
 
 ### Cause
 
-`transaction.jsp` does not sanitize the request parameters before placing it on the DOM
+`transaction.jsp` does not sanitize the request parameters before placing them on the DOM
+
+## Cross site scripting in `/bank/feedbacksuccess.jsp`
+
+### Test steps
+
+You are the vitim, visit `/feedbacksuccess.jsp?email_addr=%3Cform%20method=%22POST%22%20action=%22/test%22%3E%3Clabel%3EEvil%20username%3C/label%3E%3Cinput%20type=%22text%22%3E%3Cbr%3E%3Clabel%3EEvil%20password%3C/label%3E%3Cinput%20type=%22password%22%3E%3Cbr%3E%3Cinput%20type=%22submit%22%3E` and observe how an evil form is injected:
+
+![XSS in feedbacksuccess.jsp](images/image-40.png)
+
+### Cause
+
+The `sanitzieHtmlWithRegex` method that `feedbacksuccess.jsp` uses does not exhaustively sanitize the request parameter before placing it on the DOM
