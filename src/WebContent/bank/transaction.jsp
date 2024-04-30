@@ -32,7 +32,7 @@ IBM AltoroJ
     
 		<%@page import="java.util.Date"%>
 		<%@page import="com.ibm.security.appscan.altoromutual.model.Transaction"%>
-		<%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil" errorPage="notfound.jsp"%>
+		<%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil"%>
 
 		
 		<div class="fl" style="width: 99%;">

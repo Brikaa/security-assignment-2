@@ -1,0 +1,37 @@
+diff --git a/src/WebContent/bank/customize.jsp b/src/WebContent/bank/customize.jsp
+index d1c9e0f..865991a 100644
+--- a/src/WebContent/bank/customize.jsp
++++ b/src/WebContent/bank/customize.jsp
+@@ -20,7 +20,7 @@ IBM AltoroJ
+ (c) Copyright IBM Corp. 2008, 2013 All Rights Reserved.
+ */
+ %> 
+-<%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil" errorPage="notfound.jsp"%>
++<%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil"%>
+     
+ <jsp:include page="/header.jspf"/>
+ 
+diff --git a/src/WebContent/bank/transaction.jsp b/src/WebContent/bank/transaction.jsp
+index 48f802b..d5a5e40 100644
+--- a/src/WebContent/bank/transaction.jsp
++++ b/src/WebContent/bank/transaction.jsp
+@@ -32,7 +32,7 @@ IBM AltoroJ
+     
+ 		<%@page import="java.util.Date"%>
+ 		<%@page import="com.ibm.security.appscan.altoromutual.model.Transaction"%>
+-		<%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil" errorPage="notfound.jsp"%>
++		<%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil"%>
+ 
+ 		
+ 		<div class="fl" style="width: 99%;">
+diff --git a/src/WebContent/util/serverStatusCheckService.jsp b/src/WebContent/util/serverStatusCheckService.jsp
+index 5263c79..e86e34a 100644
+--- a/src/WebContent/util/serverStatusCheckService.jsp
++++ b/src/WebContent/util/serverStatusCheckService.jsp
+@@ -1,5 +1,5 @@
+ <%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
+-<%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil" errorPage="notfound.jsp"%>
++<%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil"%>
+ 
+ {
+ 	"HostName": "<%=ServletUtil.sanitizeWeb(request.getParameter("HostName"))%>",

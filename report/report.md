@@ -339,7 +339,9 @@ index 3031aa8..c7df6a3 100644
 
 ### Re-test steps
 
-- Enter the same credentials as the test steps and observe how the system says the username or password is incorrect
+Enter the same credentials as the test steps and observe how the system says the username or password is incorrect:
+
+![Incorrect credentials instead of sql injection](image.png)
 
 ## SQL injection in REST API (accounts)
 
@@ -387,6 +389,90 @@ index 3031aa8..c7df6a3 100644
   ```
   leading to returning all of the users in the database
 
+### Fix explanation
+
+Use prepared statements with parameter setting in `DBUtil.getUserInfo()` and `DBUtil.getAccounts()`.
+
+### Fix patch
+
+```diff
+diff --git a/src/src/com/ibm/security/appscan/altoromutual/util/DBUtil.java b/src/src/com/ibm/security/appscan/altoromutual/util/DBUtil.java
+index c7df6a3..0de05f2 100644
+--- a/src/src/com/ibm/security/appscan/altoromutual/util/DBUtil.java
++++ b/src/src/com/ibm/security/appscan/altoromutual/util/DBUtil.java
+@@ -238,17 +238,19 @@ public class DBUtil {
+ 		if (username == null || username.trim().length() == 0)
+ 			return null;
+
+-		Connection connection = getConnection();
+-		Statement statement = connection.createStatement();
+-		ResultSet resultSet =statement.executeQuery("SELECT FIRST_NAME,LAST_NAME,ROLE FROM PEOPLE WHERE USER_ID = '"+ username +"' "); /* BAD - user input should always be sanitized */
+-
+ 		String firstName = null;
+ 		String lastName = null;
+ 		String roleString = null;
+-		if (resultSet.next()){
+-			firstName = resultSet.getString("FIRST_NAME");
+-			lastName = resultSet.getString("LAST_NAME");
+-			roleString = resultSet.getString("ROLE");
++
++		Connection connection = getConnection();
++		try (PreparedStatement statement = connection.prepareStatement("SELECT FIRST_NAME,LAST_NAME,ROLE FROM PEOPLE WHERE USER_ID = ?")) {
++			statement.setString(1, username);
++			ResultSet resultSet = statement.executeQuery();
++			if (resultSet.next()){
++				firstName = resultSet.getString("FIRST_NAME");
++				lastName = resultSet.getString("LAST_NAME");
++				roleString = resultSet.getString("ROLE");
++			}
+ 		}
+
+ 		if (firstName == null || lastName == null)
+@@ -273,19 +275,21 @@ public class DBUtil {
+ 			return null;
+
+ 		Connection connection = getConnection();
+-		Statement statement = connection.createStatement();
+-		ResultSet resultSet =statement.executeQuery("SELECT ACCOUNT_ID, ACCOUNT_NAME, BALANCE FROM ACCOUNTS WHERE USERID = '"+ username +"' "); /* BAD - user input should always be sanitized */
++		try (PreparedStatement statement = connection.prepareStatement("SELECT ACCOUNT_ID, ACCOUNT_NAME, BALANCE FROM ACCOUNTS WHERE USERID = ?")) {
++			statement.setString(1, username);
++			ResultSet resultSet = statement.executeQuery();
+
+-		ArrayList<Account> accounts = new ArrayList<Account>(3);
+-		while (resultSet.next()){
+-			long accountId = resultSet.getLong("ACCOUNT_ID");
+-			String name = resultSet.getString("ACCOUNT_NAME");
+-			double balance = resultSet.getDouble("BALANCE");
+-			Account newAccount = new Account(accountId, name, balance);
+-			accounts.add(newAccount);
++			ArrayList<Account> accounts = new ArrayList<Account>(3);
++			while (resultSet.next()){
++				long accountId = resultSet.getLong("ACCOUNT_ID");
++				String name = resultSet.getString("ACCOUNT_NAME");
++				double balance = resultSet.getDouble("BALANCE");
++				Account newAccount = new Account(accountId, name, balance);
++				accounts.add(newAccount);
++			}
++
++			return accounts.toArray(new Account[accounts.size()]);
+ 		}
+-
+-		return accounts.toArray(new Account[accounts.size()]);
+ 	}
+
+ 	/**
+```
+
+### Re-test steps
+
+- Run the same script as the one in the test steps and observe how the API returns an error instead
+
+![alt text](image-1.png)
+
+- Run the following script to try to evade the login endpoint by setting the authorization token manually and observe how the API also returns an error:
+
+![alt text](image-2.png)
+
 ## SQL injection in transactions listing
 
 ### Test steps
@@ -415,6 +501,120 @@ index 3031aa8..c7df6a3 100644
 ```sql
 SELECT * FROM TRANSACTIONS WHERE (ACCOUNTID = "whatever" OR ACCOUNTID = "whatever") AND (DATE BETWEEN '2018-06-11' AND '2018-06-11 23:59:59') OR 1=1 --') ORDER BY DATE DESC
 ```
+
+### Fix explanation
+
+Use prepared statements with parameter setting in `DBUtil.getTransactions()`.
+
+### Fix patch
+
+```diff
+diff --git a/src/src/com/ibm/security/appscan/altoromutual/util/DBUtil.java b/src/src/com/ibm/security/appscan/altoromutual/util/DBUtil.java
+index 0de05f2..aa3bd9d 100644
+--- a/src/src/com/ibm/security/appscan/altoromutual/util/DBUtil.java
++++ b/src/src/com/ibm/security/appscan/altoromutual/util/DBUtil.java
+@@ -377,43 +377,46 @@ public class DBUtil {
+ 		if (accounts == null || accounts.length == 0)
+ 			return null;
+ 
+-			Connection connection = getConnection();
++		StringBuffer acctIds = new StringBuffer();
++		acctIds.append("ACCOUNTID = ?");
++		for (int i=1; i<accounts.length; i++){
++			acctIds.append(" OR ACCOUNTID = ?");	
++		}
++		
++		String dateString = null;
++		boolean startDateExists = false;
++		boolean endDateExists = false;
++		
++		if (startDate != null && startDate.length()>0 && endDate != null && endDate.length()>0){
++			startDateExists = true;
++			endDateExists = true;
++			dateString = "DATE BETWEEN ? AND ?";
++		} else if (startDate != null && startDate.length()>0){
++			startDateExists = true;
++			dateString = "DATE > ?";
++		} else if (endDate != null && endDate.length()>0){
++			endDateExists = true;
++			dateString = "DATE < ?";
++		}
++		
++		String query = "SELECT * FROM TRANSACTIONS WHERE (" + acctIds.toString() + ") " + ((dateString==null)?"": "AND (" + dateString + ") ") + "ORDER BY DATE DESC" ;
++		ArrayList<Transaction> transactions = new ArrayList<Transaction>();
+ 
+-			
+-			Statement statement = connection.createStatement();
+-			
++		Connection connection = getConnection();
++		try (PreparedStatement statement = connection.prepareStatement(query)) {
+ 			if (rowCount > 0)
+ 				statement.setMaxRows(rowCount);
+-
+-			StringBuffer acctIds = new StringBuffer();
+-			acctIds.append("ACCOUNTID = " + accounts[0].getAccountId());
+-			for (int i=1; i<accounts.length; i++){
+-				acctIds.append(" OR ACCOUNTID = "+accounts[i].getAccountId());	
++			int i = 1;
++			for (; i<=accounts.length; i++){
++				statement.setString(i, String.valueOf(accounts[i - 1].getAccountId()));
+ 			}
+-			
+-			String dateString = null;
+-			
+-			if (startDate != null && startDate.length()>0 && endDate != null && endDate.length()>0){
+-				dateString = "DATE BETWEEN '" + startDate + " 00:00:00' AND '" + endDate + " 23:59:59'";
+-			} else if (startDate != null && startDate.length()>0){
+-				dateString = "DATE > '" + startDate +" 00:00:00'";
+-			} else if (endDate != null && endDate.length()>0){
+-				dateString = "DATE < '" + endDate + " 23:59:59'";
++			if (startDateExists) {
++				statement.setString(i++, startDate + " 00:00:00");
+ 			}
+-			
+-			String query = "SELECT * FROM TRANSACTIONS WHERE (" + acctIds.toString() + ") " + ((dateString==null)?"": "AND (" + dateString + ") ") + "ORDER BY DATE DESC" ;
+-			ResultSet resultSet = null;
+-			
+-			try {
+-				resultSet = statement.executeQuery(query);
+-			} catch (SQLException e){
+-				int errorCode = e.getErrorCode();
+-				if (errorCode == 30000)
+-					throw new SQLException("Date-time query must be in the format of yyyy-mm-dd HH:mm:ss", e);
+-				
+-				throw e;
++			if (endDateExists) {
++				statement.setString(i++, endDate + " 23:59:59");
+ 			}
+-			ArrayList<Transaction> transactions = new ArrayList<Transaction>();
++			ResultSet resultSet = statement.executeQuery();
+ 			while (resultSet.next()){
+ 				int transId = resultSet.getInt("TRANSACTION_ID");
+ 				long actId = resultSet.getLong("ACCOUNTID");
+@@ -422,8 +425,14 @@ public class DBUtil {
+ 				double amount = resultSet.getDouble("AMOUNT");
+ 				transactions.add(new Transaction(transId, actId, date, desc, amount));
+ 			}
+-			
+-			return transactions.toArray(new Transaction[transactions.size()]); 
++		} catch (SQLException e){
++			int errorCode = e.getErrorCode();
++			if (errorCode == 20000)
++				throw new SQLException("Date-time query must be in the format of yyyy-mm-dd HH:mm:ss", e);
++			throw e;
++		}
++		
++		return transactions.toArray(new Transaction[transactions.size()]); 
+ 	}
+ 
+ 	public static String[] getBankUsernames() {
+```
+
+### Re-test steps
+
+Run the same test steps and notice how the server returns an error about the incorrect date format instead:
+
+![alt text](image-3.png)
 
 ## SQL injection in REST API (transactions)
 
@@ -460,6 +660,12 @@ res = await (
 SELECT * FROM TRANSACTIONS WHERE (ACCOUNTID = "whatever" OR ACCOUNTID = "whatever") AND (DATE BETWEEN '2018-06-11' AND '2018-06-11 23:59:59') OR 1=1 --') ORDER BY DATE DESC
 ```
 
+### Fix explanation
+
+### Fix patch
+
+### Re-test steps
+
 ## Unauthorized file access (`Q3_earnings.rtf`)
 
 ### Test steps
@@ -483,6 +689,12 @@ SELECT * FROM TRANSACTIONS WHERE (ACCOUNTID = "whatever" OR ACCOUNTID = "whateve
 ### Cause
 
 Everything under the `WebContent` directory and not in the `WEB-INF` directory is served by Tomcat.
+
+### Fix explanation
+
+### Fix patch
+
+### Re-test steps
 
 ## Unauthorized file access (`Draft.rtf`)
 
@@ -508,6 +720,12 @@ Everything under the `WebContent` directory and not in the `WEB-INF` directory i
 
 Everything under the `WebContent` directory and not in the `WEB-INF` directory is served by Tomcat.
 
+### Fix explanation
+
+### Fix patch
+
+### Re-test steps
+
 ## Path traversal attack
 
 ### Test steps
@@ -523,6 +741,12 @@ Everything under the `WebContent` directory and not in the `WEB-INF` directory i
 ### Cause
 
 In `index.jsp`, content is served from the `static/` directory using user provided subdirectories which can include dot-dot-slashes (`../`)
+
+### Fix explanation
+
+### Fix patch
+
+### Re-test steps
 
 ## Exploiting business logic flaw (excessive money transfer)
 
@@ -559,6 +783,12 @@ In `index.jsp`, content is served from the `static/` directory using user provid
 ### Cause
 
 `OperationsUtil.doServletTransfer` does not check the available balance.
+
+### Fix explanation
+
+### Fix patch
+
+### Re-test steps
 
 ## Exploiting business logic flaw (excessive money transfer in REST API)
 
@@ -603,6 +833,12 @@ In `index.jsp`, content is served from the `static/` directory using user provid
 
 `OperationsUtil.doApiTransfer` does not do business logic checks before calling `DBUtil.transferFunds`.
 
+### Fix explanation
+
+### Fix patch
+
+### Re-test steps
+
 ## Exploiting business logic flaw (negative money transfer in REST API)
 
 ### Test steps
@@ -645,6 +881,12 @@ In `index.jsp`, content is served from the `static/` directory using user provid
 ### Cause
 
 `OperationsUtil.doApiTransfer` does not do business logic checks before calling `DBUtil.transferFunds`.
+
+### Fix explanation
+
+### Fix patch
+
+### Re-test steps
 
 ## Bypassing access control (sending money from a foreign account in the REST API)
 
@@ -689,6 +931,12 @@ In `index.jsp`, content is served from the `static/` directory using user provid
 
 `OperationsUtil.doApiTransfer` does not do business logic checks before calling `DBUtil.transferFunds`.
 
+### Fix explanation
+
+### Fix patch
+
+### Re-test steps
+
 ## Bypassing access control (sending money from a foreign account through cookie manipulation)
 
 ### Test steps
@@ -724,6 +972,12 @@ In `index.jsp`, content is served from the `static/` directory using user provid
 
 `OperationsUtil.doServletTransfer()` checks for a cookie called `AltoroAccounts`, and if it exists, it uses it to determine the user's accounts. This cookie can be modified on the client side.
 
+### Fix explanation
+
+### Fix patch
+
+### Re-test steps
+
 ## Bypassing access control (viewing a foreign account details)
 
 ### Test steps
@@ -739,6 +993,12 @@ In `index.jsp`, content is served from the `static/` directory using user provid
 ### Cause
 
 `balance.jsp` does not check if the account id belongs to the logged in user and the database does not filter the accounts based on the logged in user
+
+### Fix explanation
+
+### Fix patch
+
+### Re-test steps
 
 ## Bypassing access control (getting a foreign account details through the REST API)
 
@@ -776,6 +1036,12 @@ res = await (
 
 `AccountAPI.getAccountBalance()` does not check whether the account in the parameter belongs to the user and the database does not filter the accounts based on the user
 
+### Fix explanation
+
+### Fix patch
+
+### Re-test steps
+
 ## Bypassing access control (getting a the last ten transactions of a foreign account through the REST API)
 
 ### Test steps
@@ -812,6 +1078,12 @@ res = await (
 
 `AccountAPI.showLastTenTransactions()` does not check whether the account in the parameter belongs to the user and the database does not filter the transactions based on the user
 
+### Fix explanation
+
+### Fix patch
+
+### Re-test steps
+
 ## Bypassing access control (accessing admin pages)
 
 ### Test steps
@@ -828,6 +1100,12 @@ res = await (
 
 The admin URL pattern in `AdminFilter` in `web.xml` is misspelled (`/adimn/*` instead of `/admin/*`)
 
+### Fix explanation
+
+### Fix patch
+
+### Re-test steps
+
 ## Cross site scripting in `/bank/customize.jsp`
 
 ### Test steps
@@ -842,6 +1120,12 @@ The admin URL pattern in `AdminFilter` in `web.xml` is misspelled (`/adimn/*` in
 
 `customize.jsp` does not sanitize the request parameter before placing it on the DOM
 
+### Fix explanation
+
+### Fix patch
+
+### Re-test steps
+
 ## Cross site scripting in `/search.jsp`
 
 ### Test steps
@@ -854,6 +1138,12 @@ The admin URL pattern in `AdminFilter` in `web.xml` is misspelled (`/adimn/*` in
 
 `search.jsp` does not sanitize the request parameter before placing it on the DOM
 
+### Fix explanation
+
+### Fix patch
+
+### Re-test steps
+
 ## Cross site scripting in `/util/serverStatusCheckService.jsp`
 
 ### Test steps
@@ -865,6 +1155,12 @@ The admin URL pattern in `AdminFilter` in `web.xml` is misspelled (`/adimn/*` in
 ### Cause
 
 `serverStatusCheckService.jsp` does not sanitize the request parameter before placing it on the DOM
+
+### Fix explanation
+
+### Fix patch
+
+### Re-test steps
 
 ## Cross site scripting in `/bank/queryxpath.jsp`
 
@@ -880,6 +1176,12 @@ The admin URL pattern in `AdminFilter` in `web.xml` is misspelled (`/adimn/*` in
 
 `queryxpath.jsp` does not sanitize the request parameter before placing it on the DOM
 
+### Fix explanation
+
+### Fix patch
+
+### Re-test steps
+
 ## Cross site scripting in `/bank/transaction.jsp`
 
 ### Test steps
@@ -894,6 +1196,12 @@ The admin URL pattern in `AdminFilter` in `web.xml` is misspelled (`/adimn/*` in
 
 `transaction.jsp` does not sanitize the request parameters before placing them on the DOM
 
+### Fix explanation
+
+### Fix patch
+
+### Re-test steps
+
 ## Cross site scripting in `/bank/feedbacksuccess.jsp`
 
 ### Test steps
@@ -905,6 +1213,12 @@ You are the vitim, visit `/feedbacksuccess.jsp?email_addr=%3Cform%20method=%22PO
 ### Cause
 
 The `sanitzieHtmlWithRegex` method that `feedbacksuccess.jsp` uses does not exhaustively sanitize the request parameter before placing it on the DOM
+
+### Fix explanation
+
+### Fix patch
+
+### Re-test steps
 
 ## Unvalidated redirect in `/bank/customize.jsp`
 
