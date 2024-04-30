@@ -10,7 +10,7 @@ header-includes: |
 # Notes
 
 - Additional properties on the system were not enabled. This makes the system consistent with the online demo at <http://demo.testfire.net/> and hence the exploits will also work there. Enabling the additional properties does introduce other vulnerabilities, but I have already found 23 vulnerabilities.
-- If you want to test on <http://demo.testfire.net/> or on your local instance, make sure to replace the `/altoromutual` part in the URLs in the exploits JavaScript scripts to the base path on which the website is hosted. For example, in case of the <http://demo.testfire.net/>, there is no base path so the `/altoromutual` part of the URL has to be removed in the scripts.
+- If you want to test on <http://demo.testfire.net/> or on your local instance, make sure to replace the `/altoromutual` part in the URLs in the exploits in the JavaScript scripts to the base path on which the website is hosted. For example, in case of the <http://demo.testfire.net/>, there is no base path so the `/altoromutual` part of the URL has to be removed in the scripts.
 - Code patches are applied in the order they appear.
 - The system provides an additional API (we'll refer to it as the REST API) in addition to the API the frontend uses to communicate with the backend. Some same vulnerabilities are discovered through both APIs; these are not duplicates. They are two entry points to the same vulnerability and should be tested separately.
 - Finding details are high-level, low-detail descriptions of the vulnerabilities.
@@ -141,7 +141,7 @@ header-includes: |
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N`
 - **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** a defect in the business logic (lack of REST API request body validation)
-- **Description of the vulnerability:** an attacker can transfer an amount (AM) of money from their account (A) to their other account (B) even if the amount (AM) exceeds the balance in account (A).
+- **Description of the vulnerability:** an attacker can transfer an amount (AM) of money from their account (A) to their other account (B) even if the amount (AM) exceeds the balance in account (A) through the `POST /api/transfer` REST API endpoint.
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to put an unlimited amount of money on one of their accounts and put a negative amount of money on another one of their accounts.
 - **Recommendations:** make sure the user can not transfer an amount of money that is larger than his account's balance through the REST API
 
@@ -152,7 +152,7 @@ header-includes: |
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N`
 - **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** a defect in the business logic (lack of REST API request body validation)
-- **Description of the vulnerability:** an attacker can transfer a negative amount of money from their account to another account
+- **Description of the vulnerability:** an attacker can transfer a negative amount of money from their account to another account through the `POST /api/transfer` REST API endpoint.
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to transfer a negative amount of money from an account to another leading to an decrease of money in the receiving account and a increase of money in the sending account
 - **Recommendations:** make sure the user can not transfer a negative amount of money through the REST API
 
@@ -163,7 +163,7 @@ header-includes: |
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N`
 - **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** a defect in the access control (lack of REST API request body validation)
-- **Description of the vulnerability:** an attacker can transfer an amount of money from accounts that do not belong to them
+- **Description of the vulnerability:** an attacker can transfer an amount of money from accounts that do not belong to them through the `POST /api/transfer` REST API endpoint.
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to transfer an amount of money from accounts that do not belong to them
 - **Recommendations:** make sure the user can only transfer money from their accounts
 
@@ -207,7 +207,7 @@ header-includes: |
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
 - **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** a defect in the access control (not validating who is GET'ing the last ten transactions of an account in the REST API)
-- **Description of the vulnerability:** an attacker can view the last ten transactions of an account of another user through the `GET /api/account` endpoint
+- **Description of the vulnerability:** an attacker can view the last ten transactions of an account of another user through the `GET /api/account/{accountNo}/transactions` endpoint
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to view the last ten transactions of foreign accounts violating their privacy
 - **Recommendations:** do proper access control in the `GET /api/account/{accountNo}/transactions` endpoint
 
@@ -845,11 +845,11 @@ The debugging message was removed in a later patch.
 
 ### Re-test steps
 
-- Visit `/index.jsp?content=../WEB-INF/app.properties` and observe how the server returns the deafult page:
+- Visit `/index.jsp?content=../WEB-INF/app.properties` and observe how the server returns the default page:
 
 ![alt text](retest-images/image-7.png)
 
-- Visit `/index.jsp?content=../WEB-INF/web.xml` and observe how the server returns the deafult page:
+- Visit `/index.jsp?content=../WEB-INF/web.xml` and observe how the server returns the default page:
 
 ![alt text](retest-images/image-8.png)
 
@@ -891,7 +891,7 @@ The debugging message was removed in a later patch.
 
 ### Fix explanation
 
-Check the originating account balance in `OperationsUtil.doServletTransfer`. Also don't use cookies as a source of truth of the user's accounts and their balances since they can be modified on the client side.
+Check the originating account balance in `OperationsUtil.doServletTransfer`. Also don't use cookies as a source of truth of the user's accounts and their balances since they can be modified on the client side (this also fixes a later vulnerability).
 
 ### Fix patch
 
