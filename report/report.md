@@ -1345,9 +1345,17 @@ Run the same script in the test steps and notice how the server returns an error
 
 ### Fix explanation
 
+Fixed in the previous vulnerability by abstracting the business logic checking code in a common function that is called by both `OperationsUtil.doServletTransfer` and `OperationsUtil.doApiTransfer`.
+
 ### Fix patch
 
+Fixed in the previous vulnerability by abstracting the business logic checking code in a common function that is called by both `OperationsUtil.doServletTransfer` and `OperationsUtil.doApiTransfer`.
+
 ### Re-test steps
+
+Run the same script in the test steps and notice how the server returns an error instead:
+
+![alt text](image-12.png)
 
 ## Bypassing access control (sending money from a foreign account through cookie manipulation)
 
@@ -1386,9 +1394,17 @@ Run the same script in the test steps and notice how the server returns an error
 
 ### Fix explanation
 
+Fixed while fixing the excessive money transfer (normal API) vulnerability since we removed the code that treats cookies as a source of truth of the user's accounts.
+
 ### Fix patch
 
+Fixed while fixing the excessive money transfer (normal API) vulnerability since we removed the code that treats cookies as a source of truth of the user's accounts.
+
 ### Re-test steps
+
+Do the same test steps above and observe how the server returns an error instead:
+
+![alt text](image-13.png)
 
 ## Bypassing access control (viewing a foreign account details)
 
@@ -1408,9 +1424,305 @@ Run the same script in the test steps and notice how the server returns an error
 
 ### Fix explanation
 
+In `balance.jsp`, if the requested account is not an account of the user, show the details of the user's first account instead. Moreover, change `DBUtil.getAccount()` and its usages to take the username of the target user and filter the queried data accordingly.
+
 ### Fix patch
 
+```diff
+diff --git a/src/WebContent/bank/balance.jsp b/src/WebContent/bank/balance.jsp
+index 6314d98..99543ac 100644
+--- a/src/WebContent/bank/balance.jsp
++++ b/src/WebContent/bank/balance.jsp
+@@ -39,16 +39,24 @@ IBM AltoroJ
+ 					ArrayList<Account> accounts = new ArrayList<Account>();
+ 					java.lang.String paramName = request.getParameter("acctId");
+ 					String accountName = paramName;
++					boolean found = false;
++					Account[] userAccounts = user.getAccounts();
+
+-					for (Account account: user.getAccounts()){
++					for (Account account: userAccounts){
+
+ 						if (!String.valueOf(account.getAccountId()).equals(paramName))
+ 							accounts.add(account);
+ 						else {
++							found = true;
+ 							accounts.add(0, account);
+ 							accountName = account.getAccountId() + " " + account.getAccountName();
+ 						}
+ 					}
++
++					if (!found) {
++						paramName = String.valueOf(userAccounts[0].getAccountId());
++						accountName = paramName;
++					}
+ 				%>
+
+ 		<!-- To modify account information do not connect to SQL source directly.  Make all changes
+```
+
+Changing `DBUtil.getAccount()`:
+
+```diff
+diff --git a/src/WebContent/bank/balance.jsp b/src/WebContent/bank/balance.jsp
+index 99543ac..8354fe5 100644
+--- a/src/WebContent/bank/balance.jsp
++++ b/src/WebContent/bank/balance.jsp
+@@ -79,7 +79,7 @@ IBM AltoroJ
+ 								for (Account account: accounts){
+ 									out.println("<option value=\""+account.getAccountId()+"\">" + account.getAccountId() + " " + account.getAccountName() + "</option>");
+ 								}
+-								double dblBalance = Account.getAccount(paramName).getBalance();
++								double dblBalance = Account.getAccount(paramName, user.getUsername()).getBalance();
+ 								String format = (dblBalance<1)?"$0.00":"$.00";
+ 								String balance = new DecimalFormat(format).format(dblBalance);
+ 							%>
+@@ -109,7 +109,7 @@ IBM AltoroJ
+ 		    <td>
+ 		      <br><b>10 Most Recent Transactions</b><table border=1 cellpadding=2 cellspacing=0 width='590'><tr><th bgcolor=#cccccc width=100>Date </th><th width=290>Description</th><th width=100>Amount</th></tr></table><DIV ID='recent' STYLE='overflow: hidden; overflow-y: scroll; width:590px; height: 152px; padding:0px; margin: 0px' ><table border=1 cellpadding=2 cellspacing=0 width='574'>
+ 		      <%
+-		      Transaction[] transactions = DBUtil.getTransactions(null, null, new Account[]{DBUtil.getAccount(Long.valueOf(paramName))}, 10);
++		      Transaction[] transactions = DBUtil.getTransactions(null, null, new Account[]{Account.getAccount(paramName, user.getUsername())}, 10);
+ 				for (Transaction transaction: transactions){
+ 			   		double dblAmt = transaction.getAmount();
+ 					String dollarFormat = (dblAmt<1)?"$0.00":"$.00";
+diff --git a/src/src/com/ibm/security/appscan/altoromutual/api/AccountAPI.java b/src/src/com/ibm/security/appscan/altoromutual/api/AccountAPI.java
+index d313e64..f33f05a 100644
+--- a/src/src/com/ibm/security/appscan/altoromutual/api/AccountAPI.java
++++ b/src/src/com/ibm/security/appscan/altoromutual/api/AccountAPI.java
+@@ -59,11 +59,12 @@ public class AccountAPI extends AltoroAPI {
+ 		// Check that the user is logged in
+ 		// System.out.println(accountNo);
+ 		String response;
++		String userName = OperationsUtil.getUserName(request);
+
+ 		// not checking the account number, side privilege escalation possible
+ 		try {
+ 			// Get the account balance
+-			double dblBalance = Account.getAccount(accountNo).getBalance();
++			double dblBalance = Account.getAccount(accountNo, userName).getBalance();
+ 			String format = (dblBalance < 1) ? "$0.00" : "$.00";
+ 			String balance = new DecimalFormat(format).format(dblBalance);
+ 			response = "{\"balance\" : \"" + balance + "\" ,\n";
+@@ -73,13 +74,13 @@ public class AccountAPI extends AltoroAPI {
+ 		} catch (Exception e) {
+ 			return Response
+ 					.status(Response.Status.INTERNAL_SERVER_ERROR)
+-					.entity("{Error : " + e.getLocalizedMessage())
++					.entity("{Error : " + e.getLocalizedMessage() + "}")
+ 					.build();
+ 		}
+
+ 		// Get the last 10 transactions
+ 		String last10Transactions;
+-		last10Transactions = this.getLastTenTransactions(accountNo);
++		last10Transactions = this.getLastTenTransactions(userName, accountNo);
+ 		if (last10Transactions.equals("Error")) {
+ 			return Response
+ 					.status(Response.Status.INTERNAL_SERVER_ERROR)
+@@ -116,7 +117,7 @@ public class AccountAPI extends AltoroAPI {
+ 		response = "{";
+ 		// Get the last 10 transactions
+ 		String last10Transactions;
+-		last10Transactions = this.getLastTenTransactions(accountNo);
++		last10Transactions = this.getLastTenTransactions(OperationsUtil.getUserName(request), accountNo);
+ 		if (last10Transactions.equals("Error")) {
+ 			return Response
+ 					.status(Response.Status.INTERNAL_SERVER_ERROR)
+@@ -166,10 +167,9 @@ public class AccountAPI extends AltoroAPI {
+
+ 		try {
+ 			Account[] account = new Account[1];
+-			account[0] = user.lookupAccount(Long.parseLong(accountNo));
++			account[0] = Account.getAccount(accountNo, user.getUsername());
+
+-			transactions = user.getUserTransactions(startString, endString,
+-					account);
++			transactions = user.getUserTransactions(startString, endString, account);
+ 		} catch (SQLException e) {
+ 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+ 					.entity("{Error : Database failed to return requested data} " + e.getLocalizedMessage())
+@@ -207,13 +207,11 @@ public class AccountAPI extends AltoroAPI {
+ 	}
+
+ 	// utilities for the API
+-	private String getLastTenTransactions(String accountNo) {
++	private String getLastTenTransactions(String userName, String accountNo) {
+ 		String response = "";
+ 		try {
+ 			response = response + "\"last_10_transactions\" :\n[";
+-			Transaction[] transactions = DBUtil
+-					.getTransactions(null, null, new Account[] { DBUtil
+-							.getAccount(Long.valueOf(accountNo)) }, 10);
++			Transaction[] transactions = DBUtil.getTransactions(null, null, new Account[] { Account.getAccount(accountNo, userName) }, 10);
+ 			for (Transaction transaction : transactions) {
+ 				double dblAmt = transaction.getAmount();
+ 				String dollarFormat = (dblAmt < 1) ? "$0.00" : "$.00";
+diff --git a/src/src/com/ibm/security/appscan/altoromutual/model/Account.java b/src/src/com/ibm/security/appscan/altoromutual/model/Account.java
+index 03087dd..6f48258 100644
+--- a/src/src/com/ibm/security/appscan/altoromutual/model/Account.java
++++ b/src/src/com/ibm/security/appscan/altoromutual/model/Account.java
+@@ -34,17 +34,13 @@ public class Account {
+ 	private String accountName = null;
+ 	private double balance = -1;
+
+-	public static Account getAccount(String accountNo) throws SQLException {
++	public static Account getAccount(String accountNo, String username) throws SQLException {
+ 		if (accountNo == null || accountNo.trim().length() == 0)
+ 			return null;
+
+ 		long account = Long.parseLong(accountNo);
+
+-		return getAccount(account);
+-	}
+-
+-	public static Account getAccount(long account) throws SQLException {
+-		return DBUtil.getAccount(account);
++		return DBUtil.getAccount(account, username);
+ 	}
+
+ 	public Account(long accountId, String accountName, double balance) {
+diff --git a/src/src/com/ibm/security/appscan/altoromutual/model/User.java b/src/src/com/ibm/security/appscan/altoromutual/model/User.java
+index e59ae65..a9a0542 100644
+--- a/src/src/com/ibm/security/appscan/altoromutual/model/User.java
++++ b/src/src/com/ibm/security/appscan/altoromutual/model/User.java
+@@ -82,14 +82,6 @@ public class User implements java.io.Serializable{
+ 		}
+ 	}
+
+-	public Account lookupAccount(Long accountNumber) {
+-		for (Account account : getAccounts()) {
+-			if (account.getAccountId() == accountNumber)
+-				return account;
+-		}
+-		return null;
+-	}
+-
+ 	public long getCreditCardNumber(){
+ 		for (Account account: getAccounts()){
+ 			if (DBUtil.CREDIT_CARD_ACCOUNT_NAME.equals(account.getAccountName()))
+diff --git a/src/src/com/ibm/security/appscan/altoromutual/util/DBUtil.java b/src/src/com/ibm/security/appscan/altoromutual/util/DBUtil.java
+index aa3bd9d..a7bfadc 100644
+--- a/src/src/com/ibm/security/appscan/altoromutual/util/DBUtil.java
++++ b/src/src/com/ibm/security/appscan/altoromutual/util/DBUtil.java
+@@ -309,8 +309,8 @@ public class DBUtil {
+ 			Connection connection = getConnection();
+ 			Statement statement = connection.createStatement();
+
+-			Account debitAccount = Account.getAccount(debitActId);
+-			Account creditAccount = Account.getAccount(creditActId);
++			Account debitAccount = getAccount(debitActId, username);
++			Account creditAccount = getAccount(creditActId, null);
+
+ 			if (debitAccount == null){
+ 				return "Originating account is invalid";
+@@ -458,19 +458,32 @@ public class DBUtil {
+ 		}
+ 	}
+
+-	public static Account getAccount(long accountNo) throws SQLException {
++	public static Account getAccount(long accountNo, String userName) throws SQLException {
+
+ 		Connection connection = getConnection();
+-		Statement statement = connection.createStatement();
+-		ResultSet resultSet =statement.executeQuery("SELECT ACCOUNT_NAME, BALANCE FROM ACCOUNTS WHERE ACCOUNT_ID = "+ accountNo +" "); /* BAD - user input should always be sanitized */
++		StringBuffer query = new StringBuffer();
++		query.append("SELECT ACCOUNT_NAME, BALANCE FROM ACCOUNTS WHERE ACCOUNT_ID = ?");
++
++		if (userName != null) {
++			query.append(" AND USERID = ?");
++		}
+
+ 		ArrayList<Account> accounts = new ArrayList<Account>(3);
+-		while (resultSet.next()){
+-			String name = resultSet.getString("ACCOUNT_NAME");
+-			double balance = resultSet.getDouble("BALANCE");
+-			Account newAccount = new Account(accountNo, name, balance);
+-			accounts.add(newAccount);
++
++		try (PreparedStatement statement = connection.prepareStatement(query.toString())) {
++			statement.setString(1, String.valueOf(accountNo));
++			if (userName != null) {
++				statement.setString(2, userName);
++			}
++			ResultSet resultSet = statement.executeQuery();
++			while (resultSet.next()){
++				String name = resultSet.getString("ACCOUNT_NAME");
++				double balance = resultSet.getDouble("BALANCE");
++				Account newAccount = new Account(accountNo, name, balance);
++				accounts.add(newAccount);
++			}
+ 		}
++
+
+ 		if (accounts.size()==0)
+ 			return null;
+diff --git a/src/src/com/ibm/security/appscan/altoromutual/util/OperationsUtil.java b/src/src/com/ibm/security/appscan/altoromutual/util/OperationsUtil.java
+index e914088..411b844 100644
+--- a/src/src/com/ibm/security/appscan/altoromutual/util/OperationsUtil.java
++++ b/src/src/com/ibm/security/appscan/altoromutual/util/OperationsUtil.java
+@@ -49,14 +49,7 @@ public class OperationsUtil {
+
+ 			Account debitAct = null;
+ 			try {
+-				Account[] accounts = user.getAccounts();
+-
+-				for (Account account: accounts){
+-					if (account.getAccountId() == debitActId){
+-						debitAct = account;
+-						break;
+-					}
+-				}
++				debitAct = DBUtil.getAccount(debitActId, userName);
+ 			} catch (Exception e){
+ 				//do nothing
+ 			}
+@@ -89,12 +82,7 @@ public class OperationsUtil {
+ 			}
+
+ 			if (accountId > 0) {
+-				for (Account account: accounts){
+-					if (account.getAccountId() == accountId){
+-						debitAct = account;
+-						break;
+-					}
+-				}
++				debitAct = DBUtil.getAccount(accountId, userName);
+ 			} else {
+ 				for (Account account: accounts){
+ 					if (account.getAccountName().equalsIgnoreCase(accountIdString)){
+@@ -125,17 +113,19 @@ public class OperationsUtil {
+
+ 		return null;
+ 	}
+-
+-	public static User getUser(HttpServletRequest request) throws SQLException{
+-
++
++	public static String getUserName(HttpServletRequest request) {
+ 		String accessToken = request.getHeader("Authorization").replaceAll("Bearer ", "");
+
+ 		//Get username password and date
+ 		String decodedToken = new String(Base64.decodeBase64(accessToken));
+ 		StringTokenizer tokenizer = new StringTokenizer(decodedToken,":");
+ 		String username = new String(Base64.decodeBase64(tokenizer.nextToken()));
+-		return DBUtil.getUserInfo(username);
+-
++		return username;
++	}
++
++	public static User getUser(HttpServletRequest request) throws SQLException{
++		return DBUtil.getUserInfo(getUserName(request));
+ 	}
+
+ 	public static String makeRandomString() {
+```
+
 ### Re-test steps
+
+Do the same test steps, and observe how the server returns the details of the user's first account instead of the victim's account:
+
+![alt text](image-14.png)
 
 ## Bypassing access control (getting a foreign account details through the REST API)
 
