@@ -172,8 +172,8 @@ header-includes: |
 ## Cross site scripting in `/bank/customize.jsp`
 
 - **Test CVSS severity**: High
-- **Test CVSS score:** 8.6
-- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N`
+- **Test CVSS score:** 7.1
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:L/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
 - **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `lang` parameter in `/bank/customize.jsp`
 - **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil script or form that can cause the victim's data to be stolen
@@ -182,8 +182,8 @@ header-includes: |
 ## Cross site scripting in `/search.jsp`
 
 - **Test CVSS severity**: High
-- **Test CVSS score:** 8.6
-- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N`
+- **Test CVSS score:** 7.1
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:L/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
 - **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `query` parameter in `/search.jsp`
 - **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil script or form that can cause the victim's data to be stolen
@@ -192,8 +192,8 @@ header-includes: |
 ## Cross site scripting in `/util/serverStatusCheckService.jsp`
 
 - **Test CVSS severity**: High
-- **Test CVSS score:** 8.6
-- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N`
+- **Test CVSS score:** 7.1
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:L/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
 - **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `HostName` parameter in `/util/serverStatusCheckService.jsp`
 - **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil script or form that can cause the victim's data to be stolen
@@ -202,8 +202,8 @@ header-includes: |
 ## Cross site scripting in `/bank/queryxpath.jsp`
 
 - **Test CVSS severity**: High
-- **Test CVSS score:** 8.6
-- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N`
+- **Test CVSS score:** 7.1
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:L/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
 - **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `content` parameter in `/bank/queryxpath.jsp`
 - **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil script or form that can cause the victim's data to be stolen
@@ -212,8 +212,8 @@ header-includes: |
 ## Cross site scripting in `/bank/transaction.jsp`
 
 - **Test CVSS severity**: High
-- **Test CVSS score:** 8.6
-- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N`
+- **Test CVSS score:** 7.1
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:L/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
 - **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `startDate` or `endDate` parameter in `/bank/transaction.jsp`
 - **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil script or form that can cause the victim's data to be stolen
@@ -222,8 +222,8 @@ header-includes: |
 ## Cross site scripting in `/bank/feedbacksuccess.jsp`
 
 - **Test CVSS severity**: High
-- **Test CVSS score:** 8.6
-- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N`
+- **Test CVSS score:** 7.1
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:L/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
 - **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `email_addr` parameter in `/bank/feedbacksuccess.jsp`
 - **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but it can contain an form that can cause the victim's data to be stolen
@@ -618,7 +618,8 @@ In `index.jsp`, content is served from the `static/` directory using user provid
 
 ![My Account > Transfer Funds](images/image-24.png)
 
-- Run the following javascript code in the browser console while on the page (F12 > console):
+- Run the following javascript code in the browser console while on the page (F12 > console) to add the victim's account to your `AltoroAccounts` cookie:
+
   ```javascript
   evilCookie = btoa('800000~evil~101|800004~Savings~101');
   document.cookie = `AltoroAccounts=${evilCookie}`;

@@ -1,14 +1,13 @@
 - TODO
   - get rid of Account.getAccount()?
   - Redirect vulnerability in customize.jsp
-  - Replace usages of sanitizeHtmlWithRegex with sanitizeWeb
-
-http://localhost:8080/altoromutual/feedbacksuccess.jsp?email_addr=%3Cform%20method=%22POST%22%20action=%22/test%22%3E%3Clabel%3EEvil%20username%3C/label%3E%3Cinput%20type=%22text%22%3E%3Cbr%3E%3Clabel%3EEvil%20password%3C/label%3E%3Cinput%20type=%22password%22%3E%3Cbr%3E%3Cinput%20type=%22submit%22%3E
 
 - Notes
   - Apply patches in order
   - Replace /altoromutual with the base url
   - Additional properties not enabled. Hence some stuff were not fixed liked OS command injection
+  - Website provides a normal API and a REST API
+    - Same vulnerability discovered in both is not a duplicate
 
 - Refix
   - Fix
