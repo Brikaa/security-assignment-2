@@ -18,31 +18,31 @@ header-includes: |
 
 # Findings List
 
-| Name                                                                                                     | Original severity | CVSS Score | After re-test severity |
-| -------------------------------------------------------------------------------------------------------- | ----------------- | ---------- | ---------------------- |
-| SQL injection in log in                                                                                  | Critical          | 9.3        | Resolved               |
-| SQL injection in REST API (accounts)                                                                     | High              | 8.7        | Resolved               |
-| SQL injection in transactions listing                                                                    | High              | 7.1        | Resolved               |
-| SQL injection in REST API (transactions)                                                                 | High              | 7.1        | Resolved               |
-| Unauthorized file access (`Q3_earnings.rtf`)                                                             | High              | 8.7        | Resolved               |
-| Unauthorized file access (`Draft.rtf`)                                                                   | High              | 8.7        | Resolved               |
-| Path traversal attack                                                                                    | Critical          | 9.2        | Resolved               |
-| Exploiting business logic flaw (excessive money transfer)                                                | High              | 7.1        | Resolved               |
-| Exploiting business logic flaw (excessive money transfer in REST API)                                    | High              | 7.1        | Resolved               |
-| Exploiting business logic flaw (negative money transfer in REST API)                                     | High              | 7.1        | Resolved               |
-| Bypassing access control (sending money from a foreign account in the REST API)                          | High              | 7.1        | Resolved               |
-| Bypassing access control (sending money from a foreign account through cookie manipulation)              | High              | 7.1        | Resolved               |
-| Bypassing access control (viewing a foreign account details)                                             | High              | 7.1        | Resolved               |
-| Bypassing access control (getting a foreign account details through the REST API)                        | High              | 7.1        | Resolved               |
+| Name                                                                                                   | Original severity | CVSS Score | After re-test severity |
+| ------------------------------------------------------------------------------------------------------ | ----------------- | ---------- | ---------------------- |
+| SQL injection in log in                                                                                | Critical          | 9.3        | Resolved               |
+| SQL injection in REST API (accounts)                                                                   | High              | 8.7        | Resolved               |
+| SQL injection in transactions listing                                                                  | High              | 7.1        | Resolved               |
+| SQL injection in REST API (transactions)                                                               | High              | 7.1        | Resolved               |
+| Unauthorized file access (`Q3_earnings.rtf`)                                                           | High              | 8.7        | Resolved               |
+| Unauthorized file access (`Draft.rtf`)                                                                 | High              | 8.7        | Resolved               |
+| Path traversal attack                                                                                  | Critical          | 9.2        | Resolved               |
+| Exploiting business logic flaw (excessive money transfer)                                              | High              | 7.1        | Resolved               |
+| Exploiting business logic flaw (excessive money transfer in REST API)                                  | High              | 7.1        | Resolved               |
+| Exploiting business logic flaw (negative money transfer in REST API)                                   | High              | 7.1        | Resolved               |
+| Bypassing access control (sending money from a foreign account in the REST API)                        | High              | 7.1        | Resolved               |
+| Bypassing access control (sending money from a foreign account through cookie manipulation)            | High              | 7.1        | Resolved               |
+| Bypassing access control (viewing a foreign account details)                                           | High              | 7.1        | Resolved               |
+| Bypassing access control (getting a foreign account details through the REST API)                      | High              | 7.1        | Resolved               |
 | Bypassing access control (getting the last ten transactions of a foreign account through the REST API) | High              | 7.1        | Resolved               |
-| Bypassing access control (accessing admin pages)                                                         | High              | 8.6        | Resolved               |
-| Cross site scripting in `/bank/customize.jsp`                                                            | High              | 7.1        | Resolved               |
-| Cross site scripting in `/search.jsp`                                                                    | High              | 7.1        | Resolved               |
-| Cross site scripting in `/util/serverStatusCheckService.jsp`                                             | High              | 7.1        | Resolved               |
-| Cross site scripting in `/bank/queryxpath.jsp`                                                           | High              | 7.1        | Resolved               |
-| Cross site scripting in `/bank/transaction.jsp`                                                          | High              | 7.1        | Resolved               |
-| Cross site scripting in `/bank/feedbacksuccess.jsp`                                                      | High              | 7.1        | Resolved               |
-| Unvalidated redirect in `/bank/customize.jsp`                                                            | Medium            | 5.3        | Resolved               |
+| Bypassing access control (accessing admin pages)                                                       | High              | 8.6        | Resolved               |
+| Cross site scripting in `/bank/customize.jsp`                                                          | High              | 7.1        | Resolved               |
+| Cross site scripting in `/search.jsp`                                                                  | High              | 7.1        | Resolved               |
+| Cross site scripting in `/util/serverStatusCheckService.jsp`                                           | High              | 7.1        | Resolved               |
+| Cross site scripting in `/bank/queryxpath.jsp`                                                         | High              | 7.1        | Resolved               |
+| Cross site scripting in `/bank/transaction.jsp`                                                        | High              | 7.1        | Resolved               |
+| Cross site scripting in `/bank/feedbacksuccess.jsp`                                                    | High              | 7.1        | Resolved               |
+| Unvalidated redirect in `/bank/customize.jsp`                                                          | Medium            | 5.3        | Resolved               |
 
 # Findings details
 
@@ -1904,7 +1904,7 @@ Visit `/admin/admin.jsp` as an unauthorized user and notice how you are redirect
 
 - Log in as any user (you will be the victim)
 
-- Visit `/bank/customize.jsp?lang=%3Cbr%3E%3Cform%3E%3Clabel%3Eevil%20username%3C/label%3E%3Cinput%20type=%27text%27%3E%3Cbr%3E%3Clabel%3Eevil%20password%3C/label%3E%3Cinput%20type=%27password%27%3E%3Cinput%20type=%27submit%27%3E%3C/form%3E` and observe how an evil form was injected:
+- Visit <http://base_url/bank/customize.jsp?lang=%3Cbr%3E%3Cform%3E%3Clabel%3Eevil%20username%3C/label%3E%3Cinput%20type=%27text%27%3E%3Cbr%3E%3Clabel%3Eevil%20password%3C/label%3E%3Cinput%20type=%27password%27%3E%3Cinput%20type=%27submit%27%3E%3C/form%3E> and observe how an evil form was injected:
 
 ![XSS in customize.jsp](test-images/image-34.png)
 
@@ -1952,7 +1952,7 @@ Follow the same test steps and observe the HTML code appears as normal text inst
 
 ### Test steps
 
-You are the victim, visit `/search.jsp?query=%3Cform%3E%3Clabel%3Eevil+username%3C%2Flabel%3E%3Cinput+type%3D%22text%22%3E%3Cbr%3E%3Clabel%3Eevil+password%3C%2Flabel%3E%3Cinput+type%3D%22password%22%3E%3C%2Fform%3E` and observe how an evil form was injected:
+You are the victim, visit <http://base_url/search.jsp?query=%3Cform%3E%3Clabel%3Eevil+username%3C%2Flabel%3E%3Cinput+type%3D%22text%22%3E%3Cbr%3E%3Clabel%3Eevil+password%3C%2Flabel%3E%3Cinput+type%3D%22password%22%3E%3C%2Fform%3E> and observe how an evil form was injected:
 
 ![XSS in search.jsp](test-images/image-35.png)
 
@@ -1992,7 +1992,7 @@ Follow the same test steps and observe the HTML code appears as normal text inst
 
 ### Test steps
 
-- You are the victim, visit `/util/serverStatusCheckService.jsp?HostName=%3Cscript%3Ealert(%22XSS%20injected%22)%3C/script%3E` and observe how an arbitrary script is run
+- You are the victim, visit <http://base_url/util/serverStatusCheckService.jsp?HostName=%3Cscript%3Ealert(%22XSS%20injected%22)%3C/script%3E> and observe how an arbitrary script is run
 
 ![XSS in serverStatusCheckService.jsp](test-images/image-36.png)
 
@@ -2035,7 +2035,7 @@ Follow the same test steps and observe the HTML code appears as normal text inst
 
 - Log in as any user (you will be the victim)
 
-- Visit `/bank/queryxpath.jsp?content=queryxpath.jsp&query=%22/%3E%3Cscript%3Ealert(%27xss%20injected%27)%3C/script%3E` and observe how an arbitrary script is run
+- Visit <http://base_url/bank/queryxpath.jsp?content=queryxpath.jsp&query=%22/%3E%3Cscript%3Ealert(%27xss%20injected%27)%3C/script%3E> and observe how an arbitrary script is run
 
 ![XSS in queryxpath.jsp](test-images/image-37.png)
 
@@ -2077,7 +2077,7 @@ Follow the same test steps and observe the HTML code appears as normal text inst
 
 - Log in as any user (you will be the victim)
 
-- Visit `/bank/transaction.jsp?startDate=%22/%3E%3Cscript%3Ealert(%22XSS%20injected%22)%3C/script%3E` and observe how an arbitrary script is run
+- Visit <http://base_url/bank/transaction.jsp?startDate=%22/%3E%3Cscript%3Ealert(%22XSS%20injected%22)%3C/script%3E> and observe how an arbitrary script is run
 
 ![XSS in transaction.jsp](test-images/image-39.png)
 
@@ -2133,7 +2133,7 @@ index dc58e30..48f802b 100644
 
 ### Test steps
 
-You are the vitim, visit `/feedbacksuccess.jsp?email_addr=%3Cform%20method=%22POST%22%20action=%22/test%22%3E%3Clabel%3EEvil%20username%3C/label%3E%3Cinput%20type=%22text%22%3E%3Cbr%3E%3Clabel%3EEvil%20password%3C/label%3E%3Cinput%20type=%22password%22%3E%3Cbr%3E%3Cinput%20type=%22submit%22%3E` and observe how an evil form is injected:
+You are the victim, visit <http://base_url/feedbacksuccess.jsp?email_addr=%3Cform%20method=%22POST%22%20action=%22/test%22%3E%3Clabel%3EEvil%20username%3C/label%3E%3Cinput%20type=%22text%22%3E%3Cbr%3E%3Clabel%3EEvil%20password%3C/label%3E%3Cinput%20type=%22password%22%3E%3Cbr%3E%3Cinput%20type=%22submit%22%3E> and observe how an evil form is injected:
 
 ![XSS in feedbacksuccess.jsp](test-images/image-40.png)
 
