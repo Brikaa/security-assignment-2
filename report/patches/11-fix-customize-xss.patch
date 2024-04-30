@@ -1,0 +1,21 @@
+diff --git a/src/WebContent/bank/customize.jsp b/src/WebContent/bank/customize.jsp
+index 66c815c..99f56e1 100644
+--- a/src/WebContent/bank/customize.jsp
++++ b/src/WebContent/bank/customize.jsp
+@@ -20,6 +20,7 @@ IBM AltoroJ
+ (c) Copyright IBM Corp. 2008, 2013 All Rights Reserved.
+ */
+ %> 
++<%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil" errorPage="notfound.jsp"%>
+     
+ <jsp:include page="/header.jspf"/>
+ 
+@@ -41,7 +42,7 @@ IBM AltoroJ
+ 		
+ 		<form method="post">
+ 		  <p>
+-		  Current Language: <%=(request.getParameter("lang")==null)?"":request.getParameter("lang")%>
++		  Current Language: <%=(request.getParameter("lang")==null)?"":ServletUtil.sanitizeWeb(request.getParameter("lang"))%>
+ 		  </p>
+ 		
+ 		  <p>
