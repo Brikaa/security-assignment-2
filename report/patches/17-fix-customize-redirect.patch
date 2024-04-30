@@ -1,0 +1,13 @@
+diff --git a/src/WebContent/bank/customize.jsp b/src/WebContent/bank/customize.jsp
+index 99f56e1..d1c9e0f 100644
+--- a/src/WebContent/bank/customize.jsp
++++ b/src/WebContent/bank/customize.jsp
+@@ -33,7 +33,7 @@ IBM AltoroJ
+ 			String content = request.getParameter("content");
+ 			if (content != null && !content.equalsIgnoreCase("customize.jsp")){
+ 				if (content.startsWith("http://") || content.startsWith("https://")){
+-					response.sendRedirect(content);
++					response.sendRedirect(request.getContextPath() + "/disclaimer.htm?url=" + content);
+ 				}
+ 			}
+ 		%>
