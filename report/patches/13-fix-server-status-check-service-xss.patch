@@ -1,0 +1,14 @@
+diff --git a/src/WebContent/util/serverStatusCheckService.jsp b/src/WebContent/util/serverStatusCheckService.jsp
+index 2737276..5263c79 100644
+--- a/src/WebContent/util/serverStatusCheckService.jsp
++++ b/src/WebContent/util/serverStatusCheckService.jsp
+@@ -1,6 +1,7 @@
+ <%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
++<%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil" errorPage="notfound.jsp"%>
+ 
+ {
+-	"HostName": "<%=request.getParameter("HostName")%>",
++	"HostName": "<%=ServletUtil.sanitizeWeb(request.getParameter("HostName"))%>",
+ 	"HostStatus": "OK"
+ }
+\ No newline at end of file
