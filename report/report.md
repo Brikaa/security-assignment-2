@@ -13,6 +13,36 @@ header-includes: |
 - If you want to test on <http://demo.testfire.net/> or on your local instance, make sure to replace the `/altoromutual` part in the URLs in the exploits JavaScript scripts to the base path on which the website is hosted. For example, in case of the <http://demo.testfire.net/>, there is no base path so the `/altoromutual` part of the URL has to be removed in the scripts.
 - Code patches are applied in the order they appear.
 - The system provides an additional API (we'll refer to it as the REST API) in addition to the API the frontend uses to communicate with the backend. Some same vulnerabilities are discovered through both APIs; these are not duplicates. They are two entry points to the same vulnerability and should be tested separately.
+- Finding details are high-level, low-detail descriptions of the vulnerabilities.
+- Finding scenarios contain the testing steps, vulnerability causes, fix explanation, fix patch and re-test steps.
+
+# Findings List
+
+| Name                                                                                                     | Original severity | CVSS Score | After re-test severity |
+| -------------------------------------------------------------------------------------------------------- | ----------------- | ---------- | ---------------------- |
+| SQL injection in log in                                                                                  | Critical          | 9.3        | Resolved               |
+| SQL injection in REST API (accounts)                                                                     | High              | 8.7        | Resolved               |
+| SQL injection in transactions listing                                                                    | High              | 7.1        | Resolved               |
+| SQL injection in REST API (transactions)                                                                 | High              | 7.1        | Resolved               |
+| Unauthorized file access (`Q3_earnings.rtf`)                                                             | High              | 8.7        | Resolved               |
+| Unauthorized file access (`Draft.rtf`)                                                                   | High              | 8.7        | Resolved               |
+| Path traversal attack                                                                                    | Critical          | 9.2        | Resolved               |
+| Exploiting business logic flaw (excessive money transfer)                                                | High              | 7.1        | Resolved               |
+| Exploiting business logic flaw (excessive money transfer in REST API)                                    | High              | 7.1        | Resolved               |
+| Exploiting business logic flaw (negative money transfer in REST API)                                     | High              | 7.1        | Resolved               |
+| Bypassing access control (sending money from a foreign account in the REST API)                          | High              | 7.1        | Resolved               |
+| Bypassing access control (sending money from a foreign account through cookie manipulation)              | High              | 7.1        | Resolved               |
+| Bypassing access control (viewing a foreign account details)                                             | High              | 7.1        | Resolved               |
+| Bypassing access control (getting a foreign account details through the REST API)                        | High              | 7.1        | Resolved               |
+| Bypassing access control (getting the last ten transactions of a foreign account through the REST API) | High              | 7.1        | Resolved               |
+| Bypassing access control (accessing admin pages)                                                         | High              | 8.6        | Resolved               |
+| Cross site scripting in `/bank/customize.jsp`                                                            | High              | 7.1        | Resolved               |
+| Cross site scripting in `/search.jsp`                                                                    | High              | 7.1        | Resolved               |
+| Cross site scripting in `/util/serverStatusCheckService.jsp`                                             | High              | 7.1        | Resolved               |
+| Cross site scripting in `/bank/queryxpath.jsp`                                                           | High              | 7.1        | Resolved               |
+| Cross site scripting in `/bank/transaction.jsp`                                                          | High              | 7.1        | Resolved               |
+| Cross site scripting in `/bank/feedbacksuccess.jsp`                                                      | High              | 7.1        | Resolved               |
+| Unvalidated redirect in `/bank/customize.jsp`                                                            | Medium            | 5.3        | Resolved               |
 
 # Findings details
 
@@ -23,7 +53,7 @@ header-includes: |
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N`
 - **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/SQL_Injection>
-- **Description of the vulnerability:** an attacker can `bypass` the correct username/password check in the login by having the username as `asd' or 1=1 --` and the password as anything.
+- **Description of the vulnerability:** an attacker can bypass the correct username/password check in the login by having the username as `asd' or 1=1 --` and the password as anything.
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to bypass login
 - **Recommendations:** use prepared statements instead of interpolating user inputs in the login SQL queries
 
@@ -170,7 +200,7 @@ header-includes: |
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to view the details foreign accounts violating their privacy
 - **Recommendations:** do proper access control in the `GET /api/account` endpoint
 
-## Bypassing access control (getting a the last ten transactions of a foreign account through the REST API)
+## Bypassing access control (getting the last ten transactions of a foreign account through the REST API)
 
 - **Test CVSS severity**: High
 - **Test CVSS score:** 7.1
@@ -280,11 +310,11 @@ header-includes: |
 - Open /login.jsp
 - Login with the username as: `asd' or 1=1 --`, and the password as anything:
 
-![Log in injected](images/image-2.png)
+![Log in injected](test-images/image-2.png)
 
 - Observe that you are logged in as the first user in the system:
 
-![After log in injected](images/image-1.png)
+![After log in injected](test-images/image-1.png)
 
 ### Cause
 
@@ -341,7 +371,7 @@ index 3031aa8..c7df6a3 100644
 
 Enter the same credentials as the test steps and observe how the system says the username or password is incorrect:
 
-![Incorrect credentials instead of sql injection](image.png)
+![Incorrect credentials instead of sql injection](retest-images/image.png)
 
 ## SQL injection in REST API (accounts)
 
@@ -374,7 +404,7 @@ Enter the same credentials as the test steps and observe how the system says the
 
 - Observe how all bank accounts are returned:
 
-![All bank accounts returned from REST API](images/image-3.png)
+![All bank accounts returned from REST API](test-images/image-3.png)
 
 ### Cause
 
@@ -467,11 +497,11 @@ index c7df6a3..0de05f2 100644
 
 - Run the same script as the one in the test steps and observe how the API returns an error instead
 
-![alt text](image-1.png)
+![alt text](retest-images/image-1.png)
 
 - Run the following script to try to evade the login endpoint by setting the authorization token manually and observe how the API also returns an error:
 
-![alt text](image-2.png)
+![alt text](retest-images/image-2.png)
 
 ## SQL injection in transactions listing
 
@@ -484,15 +514,15 @@ index c7df6a3..0de05f2 100644
   Form1.onsubmit = undefined;
   ```
 
-![Bypass transactions filtering frontend validation](images/image.png)
+![Bypass transactions filtering frontend validation](test-images/image.png)
 
 - Set the start date as `2018-06-11` and the end date as `2018-06-11 23:59:59') OR 1=1 --`:
 
-![Setting the start date and the end date of transactions filtering](images/image-4.png)
+![Setting the start date and the end date of transactions filtering](test-images/image-4.png)
 
 - Click submit and observe how all of the transactions on the system are shown:
 
-![All of the transactions on the system are shown](images/image-5.png)
+![All of the transactions on the system are shown](test-images/image-5.png)
 
 ### Cause
 
@@ -614,7 +644,7 @@ index 0de05f2..aa3bd9d 100644
 
 Run the same test steps and notice how the server returns an error about the incorrect date format instead:
 
-![alt text](image-3.png)
+![alt text](retest-images/image-3.png)
 
 ## SQL injection in REST API (transactions)
 
@@ -650,7 +680,7 @@ res = await (
 ).json();
 ```
 
-![Listing all of the transactions on the system through the REST API](images/image-38.png)
+![Listing all of the transactions on the system through the REST API](test-images/image-38.png)
 
 ### Cause
 
@@ -672,7 +702,7 @@ Fixed by fixing the previous vulnerability since it shared the same vulnerable c
 
 Run the same script in the test steps and observe how the server returns an error instead:
 
-![alt text](image-4.png)
+![alt text](retest-images/image-4.png)
 
 ## Unauthorized file access (`Q3_earnings.rtf`)
 
@@ -680,19 +710,19 @@ Run the same script in the test steps and observe how the server returns an erro
 
 - Click on "INSIDE ALTORO MUTUAL":
 
-![Inside Altoro Mutual](images/image-6.png)
+![Inside Altoro Mutual](test-images/image-6.png)
 
 - Click on "2006 community annual report":
 
-![2006 community annual report](images/image-7.png)
+![2006 community annual report](test-images/image-7.png)
 
 - Change the last part of the URL to `Q3_earning.rtf`:
 
-![Q3 earnings download](images/image-8.png)
+![Q3 earnings download](test-images/image-8.png)
 
 - Download and view the file:
 
-![Q3 earnings](images/image-9.png)
+![Q3 earnings](test-images/image-9.png)
 
 ### Cause
 
@@ -715,7 +745,7 @@ rename to src/confidential/Q3_earnings.rtf
 
 Do the same test steps and observe how the server returns a "not found" error instead:
 
-![alt text](image-5.png)
+![alt text](retest-images/image-5.png)
 
 ## Unauthorized file access (`Draft.rtf`)
 
@@ -723,19 +753,19 @@ Do the same test steps and observe how the server returns a "not found" error in
 
 - Click on "INSIDE ALTORO MUTUAL":
 
-![Inside Altoro Mutual](images/image-6.png)
+![Inside Altoro Mutual](test-images/image-6.png)
 
 - Click on "2006 community annual report":
 
-![2006 community annual report](images/image-7.png)
+![2006 community annual report](test-images/image-7.png)
 
 - Change the last part of the URL to `Draft.rtf`:
 
-![Draft download](images/image-10.png)
+![Draft download](test-images/image-10.png)
 
 - Download and view the file:
 
-![Draft](images/image-11.png)
+![Draft](test-images/image-11.png)
 
 ### Cause
 
@@ -758,7 +788,7 @@ rename to src/confidential/Draft.rtf
 
 Do the same test steps and observe how the server returns a "not found" error instead:
 
-![alt text](image-6.png)
+![alt text](retest-images/image-6.png)
 
 ## Path traversal attack
 
@@ -766,11 +796,11 @@ Do the same test steps and observe how the server returns a "not found" error in
 
 - Visit `/index.jsp?content=../WEB-INF/app.properties` and observe an application configuration file get leaked
 
-![app.properties getting leaked](images/image-12.png)
+![app.properties getting leaked](test-images/image-12.png)
 
 - Visit `/index.jsp?content=../WEB-INF/web.xml` and observe an application configuration file get leaked
 
-![web.xml getting leaked](images/image-13.png)
+![web.xml getting leaked](test-images/image-13.png)
 
 ### Cause
 
@@ -817,11 +847,11 @@ The debugging message was removed in a later patch.
 
 - Visit `/index.jsp?content=../WEB-INF/app.properties` and observe how the server returns the deafult page:
 
-![alt text](image-7.png)
+![alt text](retest-images/image-7.png)
 
 - Visit `/index.jsp?content=../WEB-INF/web.xml` and observe how the server returns the deafult page:
 
-![alt text](image-8.png)
+![alt text](retest-images/image-8.png)
 
 ## Exploiting business logic flaw (excessive money transfer)
 
@@ -829,31 +859,31 @@ The debugging message was removed in a later patch.
 
 - Go to `View Account Summary`:
 
-![View account summary](images/image-14.png)
+![View account summary](test-images/image-14.png)
 
 - Select an account (A) and make note of the available balance:
 
-![A available balance](images/image-15.png)
+![A available balance](test-images/image-15.png)
 
 - Select an account (B) and make note of the available balance:
 
-![B available balance](images/image-18.png)
+![B available balance](test-images/image-18.png)
 
 - Go to `Transfer Funds`, change the `To Account` and make note of it, enter an amount that is larger than the balance, click `Transfer Money`:
 
-![Transferring funds](images/image-16.png)
+![Transferring funds](test-images/image-16.png)
 
 - Click `Transfer Money` and notice how the operation succeeds:
 
-![Transferring funds succeeded](images/image-17.png)
+![Transferring funds succeeded](test-images/image-17.png)
 
 - View the available balance in account (A) and notice how it becomes negative:
 
-![Negative balance](images/image-19.png)
+![Negative balance](test-images/image-19.png)
 
 - View the available balance in account (B) and notice how it increases:
 
-![Increased balance](images/image-20.png)
+![Increased balance](test-images/image-20.png)
 
 ### Cause
 
@@ -1086,7 +1116,7 @@ index 6524e35..81fb326 100644
 
 Try to transfer funds that are larger than the originating account's balance and notice how the server returns an error:
 
-![alt text](image-9.png)
+![alt text](retest-images/image-9.png)
 
 ## Exploiting business logic flaw (excessive money transfer in REST API)
 
@@ -1123,7 +1153,7 @@ Try to transfer funds that are larger than the originating account's balance and
   ).json();
   ```
 
-![Sending excessive funds via REST API](images/image-21.png)
+![Sending excessive funds via REST API](test-images/image-21.png)
 
 - Confirm that the funds are sent as in the previous vulnerability
 
@@ -1241,7 +1271,7 @@ index a481b6a..e914088 100644
 
 Run the same script in the test steps and notice how the server returns an error instead:
 
-![alt text](image-10.png)
+![alt text](retest-images/image-10.png)
 
 ## Exploiting business logic flaw (negative money transfer in REST API)
 
@@ -1278,7 +1308,7 @@ Run the same script in the test steps and notice how the server returns an error
   ).json();
   ```
 
-![Transferring negative funds](images/image-22.png)
+![Transferring negative funds](test-images/image-22.png)
 
 - Confirm the new balances as in the previous vulnerability
 
@@ -1298,7 +1328,7 @@ Fixed in the previous vulnerability by abstracting the business logic checking c
 
 Run the same script in the test steps and notice how the server returns an error instead:
 
-![alt text](image-11.png)
+![alt text](retest-images/image-11.png)
 
 ## Bypassing access control (sending money from a foreign account in the REST API)
 
@@ -1335,7 +1365,7 @@ Run the same script in the test steps and notice how the server returns an error
   ).json();
   ```
 
-![Transferring money from a foreign account](images/image-23.png)
+![Transferring money from a foreign account](test-images/image-23.png)
 
 - Confirm the new balances as in the previous vulnerability
 
@@ -1355,7 +1385,7 @@ Fixed in the previous vulnerability by abstracting the business logic checking c
 
 Run the same script in the test steps and notice how the server returns an error instead:
 
-![alt text](image-12.png)
+![alt text](retest-images/image-12.png)
 
 ## Bypassing access control (sending money from a foreign account through cookie manipulation)
 
@@ -1365,7 +1395,7 @@ Run the same script in the test steps and notice how the server returns an error
 
 - Go to `My Account` > `Transfer Funds`:
 
-![My Account > Transfer Funds](images/image-24.png)
+![My Account > Transfer Funds](test-images/image-24.png)
 
 - Run the following javascript code in the browser console while on the page (F12 > console) to add the victim's account to your `AltoroAccounts` cookie:
 
@@ -1378,15 +1408,15 @@ Run the same script in the test steps and notice how the server returns an error
   fromAccount.appendChild(opt);
   ```
 
-![Adding an evil cookie](images/image-25.png)
+![Adding an evil cookie](test-images/image-25.png)
 
 - Choose "800000 victim" from the "from" dropdown list (notice that it does not belong to Jane Doe), choose one of your accounts from the "to" drop down list and enter an amount of money:
 
-![Transferring money from the victim](images/image-26.png)
+![Transferring money from the victim](test-images/image-26.png)
 
 - Click `Transfer Money` and notice how the operation is successful:
 
-![Transferring money from the victim successful](images/image-27.png)
+![Transferring money from the victim successful](test-images/image-27.png)
 
 ### Cause
 
@@ -1404,7 +1434,7 @@ Fixed while fixing the excessive money transfer (normal API) vulnerability since
 
 Do the same test steps above and observe how the server returns an error instead:
 
-![alt text](image-13.png)
+![alt text](retest-images/image-13.png)
 
 ## Bypassing access control (viewing a foreign account details)
 
@@ -1412,11 +1442,11 @@ Do the same test steps above and observe how the server returns an error instead
 
 - Go to "View Account Summary" > "Go" (on any account)
 
-![Account details](images/image-30.png)
+![Account details](test-images/image-30.png)
 
 - Change the `listAccounts` URL parameter to a bank account number of another user, and observe how their account details are returned
 
-![Foreign account details](images/image-31.png)
+![Foreign account details](test-images/image-31.png)
 
 ### Cause
 
@@ -1722,7 +1752,7 @@ index e914088..411b844 100644
 
 Do the same test steps, and observe how the server returns the details of the user's first account instead of the victim's account:
 
-![alt text](image-14.png)
+![alt text](retest-images/image-14.png)
 
 ## Bypassing access control (getting a foreign account details through the REST API)
 
@@ -1754,7 +1784,7 @@ res = await (
 ).json();
 ```
 
-![Getting a foreign account details](images/image-28.png)
+![Getting a foreign account details](test-images/image-28.png)
 
 ### Cause
 
@@ -1772,9 +1802,9 @@ Fixed while fixing the previous vulnerability.
 
 Run the same script in the test steps and notice how the server returns an error instead:
 
-![alt text](image-15.png)
+![alt text](retest-images/image-15.png)
 
-## Bypassing access control (getting a the last ten transactions of a foreign account through the REST API)
+## Bypassing access control (getting the last ten transactions of a foreign account through the REST API)
 
 ### Test steps
 
@@ -1804,7 +1834,7 @@ res = await (
 ).json();
 ```
 
-![Getting foreign last ten transactions](images/image-29.png)
+![Getting foreign last ten transactions](test-images/image-29.png)
 
 ### Cause
 
@@ -1822,7 +1852,7 @@ Fixed while fixing the previous vulnerabilities.
 
 Run the same script in the test steps and notice how the server returns an error instead:
 
-![alt text](image-16.png)
+![alt text](retest-images/image-16.png)
 
 ## Bypassing access control (accessing admin pages)
 
@@ -1830,11 +1860,11 @@ Run the same script in the test steps and notice how the server returns an error
 
 - Log in as a non-admin user
 
-![Logging in as a normal user](images/image-32.png)
+![Logging in as a normal user](test-images/image-32.png)
 
 - Visit /admin/admin.jsp and observe how the user can access admin pages
 
-![Accessing admin pages](images/image-33.png)
+![Accessing admin pages](test-images/image-33.png)
 
 ### Cause
 
@@ -1866,7 +1896,7 @@ index b5d02e5..f0d7940 100644
 
 Visit `/admin/admin.jsp` as an unauthorized user and notice how you are redirected back to your homepage:
 
-![alt text](image-17.png)
+![alt text](retest-images/image-17.png)
 
 ## Cross site scripting in `/bank/customize.jsp`
 
@@ -1876,7 +1906,7 @@ Visit `/admin/admin.jsp` as an unauthorized user and notice how you are redirect
 
 - Visit `/bank/customize.jsp?lang=%3Cbr%3E%3Cform%3E%3Clabel%3Eevil%20username%3C/label%3E%3Cinput%20type=%27text%27%3E%3Cbr%3E%3Clabel%3Eevil%20password%3C/label%3E%3Cinput%20type=%27password%27%3E%3Cinput%20type=%27submit%27%3E%3C/form%3E` and observe how an evil form was injected:
 
-![XSS in customize.jsp](images/image-34.png)
+![XSS in customize.jsp](test-images/image-34.png)
 
 ### Cause
 
@@ -1916,7 +1946,7 @@ index 66c815c..99f56e1 100644
 
 Follow the same test steps and observe the HTML code appears as normal text instead of being injected:
 
-![alt text](image-18.png)
+![alt text](retest-images/image-18.png)
 
 ## Cross site scripting in `/search.jsp`
 
@@ -1924,7 +1954,7 @@ Follow the same test steps and observe the HTML code appears as normal text inst
 
 You are the victim, visit `/search.jsp?query=%3Cform%3E%3Clabel%3Eevil+username%3C%2Flabel%3E%3Cinput+type%3D%22text%22%3E%3Cbr%3E%3Clabel%3Eevil+password%3C%2Flabel%3E%3Cinput+type%3D%22password%22%3E%3C%2Fform%3E` and observe how an evil form was injected:
 
-![XSS in search.jsp](images/image-35.png)
+![XSS in search.jsp](test-images/image-35.png)
 
 ### Cause
 
@@ -1956,7 +1986,7 @@ index cccd7ae..47eb9b5 100644
 
 Follow the same test steps and observe the HTML code appears as normal text instead of being injected:
 
-![alt text](image-19.png)
+![alt text](retest-images/image-19.png)
 
 ## Cross site scripting in `/util/serverStatusCheckService.jsp`
 
@@ -1964,7 +1994,7 @@ Follow the same test steps and observe the HTML code appears as normal text inst
 
 - You are the victim, visit `/util/serverStatusCheckService.jsp?HostName=%3Cscript%3Ealert(%22XSS%20injected%22)%3C/script%3E` and observe how an arbitrary script is run
 
-![XSS in serverStatusCheckService.jsp](images/image-36.png)
+![XSS in serverStatusCheckService.jsp](test-images/image-36.png)
 
 ### Cause
 
@@ -1997,7 +2027,7 @@ index 2737276..5263c79 100644
 
 Follow the same test steps and observe the HTML code appears as normal text instead of being injected:
 
-![alt text](image-20.png)
+![alt text](retest-images/image-20.png)
 
 ## Cross site scripting in `/bank/queryxpath.jsp`
 
@@ -2007,7 +2037,7 @@ Follow the same test steps and observe the HTML code appears as normal text inst
 
 - Visit `/bank/queryxpath.jsp?content=queryxpath.jsp&query=%22/%3E%3Cscript%3Ealert(%27xss%20injected%27)%3C/script%3E` and observe how an arbitrary script is run
 
-![XSS in queryxpath.jsp](images/image-37.png)
+![XSS in queryxpath.jsp](test-images/image-37.png)
 
 ### Cause
 
@@ -2039,7 +2069,7 @@ index cdc88dd..4191017 100644
 
 Follow the same test steps and observe the HTML code appears as normal text instead of being injected:
 
-![alt text](image-21.png)
+![alt text](retest-images/image-21.png)
 
 ## Cross site scripting in `/bank/transaction.jsp`
 
@@ -2049,7 +2079,7 @@ Follow the same test steps and observe the HTML code appears as normal text inst
 
 - Visit `/bank/transaction.jsp?startDate=%22/%3E%3Cscript%3Ealert(%22XSS%20injected%22)%3C/script%3E` and observe how an arbitrary script is run
 
-![XSS in transaction.jsp](images/image-39.png)
+![XSS in transaction.jsp](test-images/image-39.png)
 
 ### Cause
 
@@ -2093,11 +2123,11 @@ index dc58e30..48f802b 100644
 
 - Follow the same test steps and observe the HTML code appears as normal text instead of being injected:
 
-![alt text](image-22.png)
+![alt text](retest-images/image-22.png)
 
 - Change the `startDate` parameter to `endDate` and observe how there is still no injection:
 
-![alt text](image-23.png)
+![alt text](retest-images/image-23.png)
 
 ## Cross site scripting in `/bank/feedbacksuccess.jsp`
 
@@ -2105,7 +2135,7 @@ index dc58e30..48f802b 100644
 
 You are the vitim, visit `/feedbacksuccess.jsp?email_addr=%3Cform%20method=%22POST%22%20action=%22/test%22%3E%3Clabel%3EEvil%20username%3C/label%3E%3Cinput%20type=%22text%22%3E%3Cbr%3E%3Clabel%3EEvil%20password%3C/label%3E%3Cinput%20type=%22password%22%3E%3Cbr%3E%3Cinput%20type=%22submit%22%3E` and observe how an evil form is injected:
 
-![XSS in feedbacksuccess.jsp](images/image-40.png)
+![XSS in feedbacksuccess.jsp](test-images/image-40.png)
 
 ### Cause
 
@@ -2179,7 +2209,7 @@ index 81fb326..c1833fc 100644
 
 Follow the same test steps and observe the HTML code appears as normal text instead of being injected:
 
-![alt text](image-24.png)
+![alt text](retest-images/image-24.png)
 
 ## Unvalidated redirect in `/bank/customize.jsp`
 
@@ -2189,7 +2219,7 @@ Follow the same test steps and observe the HTML code appears as normal text inst
 
 - Visit `/bank/customize.jsp?content=https://www.google.com` and observe how you are redirected to `https://www.google.com` without warning.
 
-![Unvalidated redirect in customize.jsp](images/image-41.png)
+![Unvalidated redirect in customize.jsp](test-images/image-41.png)
 
 ### Cause
 
@@ -2221,7 +2251,7 @@ index 99f56e1..d1c9e0f 100644
 
 Follow the same test steps and observe how you are redirected to the disclaimer page instead:
 
-![alt text](image-25.png)
+![alt text](retest-images/image-25.png)
 
 ## Additional patches
 
