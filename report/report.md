@@ -861,9 +861,232 @@ The debugging message was removed in a later patch.
 
 ### Fix explanation
 
+Check the originating account balance in `OperationsUtil.doServletTransfer`. Also don't use cookies as a source of truth of the user's accounts and their balances since they can be modified on the client side.
+
 ### Fix patch
 
+```diff
+diff --git a/src/src/com/ibm/security/appscan/altoromutual/model/Account.java b/src/src/com/ibm/security/appscan/altoromutual/model/Account.java
+index 2c4be12..03087dd 100644
+--- a/src/src/com/ibm/security/appscan/altoromutual/model/Account.java
++++ b/src/src/com/ibm/security/appscan/altoromutual/model/Account.java
+@@ -72,50 +72,4 @@ public class Account {
+ 	public String getAccountName() {
+ 		return accountName;
+ 	}
+-
+-	public static Account[] fromBase64List (String b64accounts){
+-		String accounts = new String(Base64.decodeBase64(b64accounts));
+-
+-		StringTokenizer outerTokens = new StringTokenizer(accounts, "|");
+-		ArrayList<Account> accountList = new ArrayList<Account>();
+-
+-		while (outerTokens.hasMoreTokens()){
+-			StringTokenizer tokens = new StringTokenizer(outerTokens.nextToken(), "~");
+-
+-			long acctId = -1;
+-			String acctName = null;
+-			double amt = Double.MAX_VALUE;
+-			if (tokens.hasMoreTokens())
+-				acctId = Long.valueOf(tokens.nextToken());
+-
+-			if (tokens.hasMoreTokens())
+-				acctName = tokens.nextToken();
+-
+-			if (tokens.hasMoreTokens())
+-				amt = Double.valueOf(tokens.nextToken());
+-
+-			if (acctId > -1 && acctName != null && amt != Double.MAX_VALUE){
+-				accountList.add(new Account(acctId, acctName, amt));
+-			}
+-		}
+-
+-		return (accountList.toArray(new Account[accountList.size()]));
+-	}
+-
+-	public static String toBase64List(Account[] accounts){
+-
+-		StringBuffer accountList = new StringBuffer();
+-
+-		for (Account account:accounts){
+-			accountList.append(account.getAccountId());
+-			accountList.append("~");
+-			accountList.append(account.getAccountName());
+-			accountList.append("~");
+-			accountList.append(account.getBalance());
+-			accountList.append("|");
+-		}
+-
+-		return Base64.encodeBase64String(accountList.toString().getBytes());
+-
+-	}
+ }
+diff --git a/src/src/com/ibm/security/appscan/altoromutual/servlet/LoginServlet.java b/src/src/com/ibm/security/appscan/altoromutual/servlet/LoginServlet.java
+index 55303c3..7216b87 100644
+--- a/src/src/com/ibm/security/appscan/altoromutual/servlet/LoginServlet.java
++++ b/src/src/com/ibm/security/appscan/altoromutual/servlet/LoginServlet.java
+@@ -20,7 +20,6 @@ package com.ibm.security.appscan.altoromutual.servlet;
+ import java.io.IOException;
+
+ import javax.servlet.ServletException;
+-import javax.servlet.http.Cookie;
+ import javax.servlet.http.HttpServlet;
+ import javax.servlet.http.HttpServletRequest;
+ import javax.servlet.http.HttpServletResponse;
+@@ -89,10 +88,8 @@ public class LoginServlet extends HttpServlet {
+ 			return;
+ 		}
+
+-		//Handle the cookie using ServletUtil.establishSession(String)
+ 		try{
+-			Cookie accountCookie = ServletUtil.establishSession(username,session);
+-			response.addCookie(accountCookie);
++			ServletUtil.establishSession(username,session);
+ 			response.sendRedirect(request.getContextPath()+"/bank/main.jsp");
+ 			}
+ 		catch (Exception ex){
+diff --git a/src/src/com/ibm/security/appscan/altoromutual/util/OperationsUtil.java b/src/src/com/ibm/security/appscan/altoromutual/util/OperationsUtil.java
+index 5629335..a481b6a 100644
+--- a/src/src/com/ibm/security/appscan/altoromutual/util/OperationsUtil.java
++++ b/src/src/com/ibm/security/appscan/altoromutual/util/OperationsUtil.java
+@@ -6,7 +6,6 @@ import java.text.SimpleDateFormat;
+ import java.util.Date;
+ import java.util.Random;
+ import java.util.StringTokenizer;
+-import javax.servlet.http.Cookie;
+ import javax.servlet.http.HttpServletRequest;
+ import org.apache.commons.codec.binary.Base64;
+ import org.apache.commons.lang.StringEscapeUtils;
+@@ -39,31 +38,15 @@ public class OperationsUtil {
+ 	public static String doServletTransfer(HttpServletRequest request, long creditActId, String accountIdString,
+ 			double amount) {
+
+-		long debitActId = 0;
++		Account debitAct = null;
+
+ 		User user = ServletUtil.getUser(request);
+ 		String userName = user.getUsername();
+
+ 		try {
+ 			Long accountId = -1L;
+-			Cookie[] cookies = request.getCookies();
+-
+-			Cookie altoroCookie = null;
+-
+-			for (Cookie cookie: cookies){
+-				if (ServletUtil.ALTORO_COOKIE.equals(cookie.getName())){
+-					altoroCookie = cookie;
+-					break;
+-				}
+-			}
+-
+-			Account[] cookieAccounts = null;
+-			if (altoroCookie == null)
+-				cookieAccounts = user.getAccounts();
+-			else
+-				cookieAccounts = Account.fromBase64List(altoroCookie.getValue());
+-
+
++			Account[] accounts = user.getAccounts();
+
+ 			try {
+ 				accountId = Long.parseLong(accountIdString);
+@@ -72,16 +55,16 @@ public class OperationsUtil {
+ 			}
+
+ 			if (accountId > 0) {
+-				for (Account account: cookieAccounts){
++				for (Account account: accounts){
+ 					if (account.getAccountId() == accountId){
+-						debitActId = account.getAccountId();
++						debitAct = account;
+ 						break;
+ 					}
+ 				}
+ 			} else {
+-				for (Account account: cookieAccounts){
++				for (Account account: accounts){
+ 					if (account.getAccountName().equalsIgnoreCase(accountIdString)){
+-						debitActId = account.getAccountId();
++						debitAct = account;
+ 						break;
+ 					}
+ 				}
+@@ -95,22 +78,23 @@ public class OperationsUtil {
+ 		String message = null;
+ 		if (creditActId < 0){
+ 			message = "Destination account is invalid";
+-		} else if (debitActId < 0) {
++		} else if (debitAct == null) {
+ 			message = "Originating account is invalid";
+ 		} else if (amount < 0){
+ 			message = "Transfer amount is invalid";
++		} else if (amount > debitAct.getBalance()){
++			message = "Insufficient balance in originating account";
+ 		}
+
+ 		//if transfer amount is zero then there is nothing to do
+ 		if (message == null && amount > 0){
+-			//Notice that available balance is not checked
+-			message = DBUtil.transferFunds(userName, creditActId, debitActId, amount);
++			message = DBUtil.transferFunds(userName, creditActId, debitAct.getAccountId(), amount);
+ 		}
+
+ 		if (message != null){
+ 			message = "ERROR: " + message;
+ 		} else {
+-			message = amount + " was successfully transferred from Account " + debitActId + " into Account " + creditActId + " at " + new SimpleDateFormat().format(new Date()) + ".";
++			message = amount + " was successfully transferred from Account " + debitAct.getAccountId() + " into Account " + creditActId + " at " + new SimpleDateFormat().format(new Date()) + ".";
+ 		}
+
+ 		return message;
+diff --git a/src/src/com/ibm/security/appscan/altoromutual/util/ServletUtil.java b/src/src/com/ibm/security/appscan/altoromutual/util/ServletUtil.java
+index 6524e35..81fb326 100644
+--- a/src/src/com/ibm/security/appscan/altoromutual/util/ServletUtil.java
++++ b/src/src/com/ibm/security/appscan/altoromutual/util/ServletUtil.java
+@@ -34,7 +34,6 @@ import java.util.StringTokenizer;
+ import java.util.regex.Pattern;
+
+ import javax.servlet.ServletContext;
+-import javax.servlet.http.Cookie;
+ import javax.servlet.http.HttpServletRequest;
+ import javax.servlet.http.HttpSession;
+ import javax.xml.parsers.DocumentBuilderFactory;
+@@ -65,8 +64,6 @@ public class ServletUtil {
+ 	public static File logFile = null;
+ 	public static boolean swaggerInitialized = false;
+
+-	public static final String ALTORO_COOKIE = "AltoroAccounts";
+-
+ 	public static final String EMAIL_REGEXP = "^..*@..*\\...*$";
+
+ 	public static final String LEGAL_EMAIL_REGEXP = "^[A-Za-z0-9_\\-\\.\\+]+@[A-Za-z0-9\\-\\.]+.[A-Za-z]+$";
+@@ -337,18 +334,14 @@ public class ServletUtil {
+ 		}
+ 	}
+
+-	public static Cookie establishSession(String username, HttpSession session){
++	public static void establishSession(String username, HttpSession session){
+ 		try{
+ 			User user = DBUtil.getUserInfo(username);
+ 			Account[] accounts = user.getAccounts();
+-		    String accountStringList = Account.toBase64List(accounts);
+-		    Cookie accountCookie = new Cookie(ServletUtil.ALTORO_COOKIE, accountStringList);
+ 			session.setAttribute(ServletUtil.SESSION_ATTR_USER, user);
+-		    return accountCookie;
+ 		}
+ 		catch(SQLException e){
+ 			e.printStackTrace();
+-			return null;
+ 		}
+ 	}
+```
+
 ### Re-test steps
+
+Try to transfer funds that are larger than the originating account's balance and notice how the server returns an error:
+
+![alt text](image-9.png)
 
 ## Exploiting business logic flaw (excessive money transfer in REST API)
 
@@ -910,9 +1133,115 @@ The debugging message was removed in a later patch.
 
 ### Fix explanation
 
+Use the same validation in `OperationsUtil.doServletTransfer` by abstracting some of it in a common function
+
 ### Fix patch
 
+```diff
+diff --git a/src/src/com/ibm/security/appscan/altoromutual/util/OperationsUtil.java b/src/src/com/ibm/security/appscan/altoromutual/util/OperationsUtil.java
+index a481b6a..e914088 100644
+--- a/src/src/com/ibm/security/appscan/altoromutual/util/OperationsUtil.java
++++ b/src/src/com/ibm/security/appscan/altoromutual/util/OperationsUtil.java
+@@ -14,20 +14,54 @@ import com.ibm.security.appscan.altoromutual.model.User;
+
+ public class OperationsUtil {
+
++	private static String transferAndGetMessage(String userName, long creditActId, Account debitAct, double amount) {
++		//we will not send an error immediately, but we need to have an indication when one occurs...
++		String message = null;
++		if (creditActId < 0){
++			message = "Destination account is invalid";
++		} else if (debitAct == null) {
++			message = "Originating account is invalid";
++		} else if (amount < 0){
++			message = "Transfer amount is invalid";
++		} else if (amount > debitAct.getBalance()){
++			message = "Insufficient balance in originating account";
++		}
++
++		//if transfer amount is zero then there is nothing to do
++		if (message == null && amount > 0){
++			message = DBUtil.transferFunds(userName, creditActId, debitAct.getAccountId(), amount);
++		}
++		if (message != null){
++			message = "ERROR: " + message;
++		} else {
++			message = amount + " was successfully transferred from Account " + debitAct.getAccountId() + " into Account " + creditActId + " at " + new SimpleDateFormat().format(new Date()) + ".";
++		}
++
++		return message;
++	}
++
+ 	public static String doApiTransfer(HttpServletRequest request, long creditActId, long debitActId,
+ 			double amount) {
+
+ 		try {
+ 			User user = OperationsUtil.getUser(request);
+ 			String userName = user.getUsername();
+-			String message = DBUtil.transferFunds(userName, creditActId, debitActId, amount);
+-			if (message != null){
+-				message = "ERROR: " + message;
+-			} else {
+-				message = amount + " was successfully transferred from Account " + debitActId + " into Account " + creditActId + " at " + new SimpleDateFormat().format(new Date()) + ".";
++
++			Account debitAct = null;
++			try {
++				Account[] accounts = user.getAccounts();
++
++				for (Account account: accounts){
++					if (account.getAccountId() == debitActId){
++						debitAct = account;
++						break;
++					}
++				}
++			} catch (Exception e){
++				//do nothing
+ 			}
+
+-			return message;
++			return transferAndGetMessage(userName, creditActId, debitAct, amount);
+
+ 		} catch (SQLException e) {
+ 			return "ERROR - failed to transfer funds: " + e.getLocalizedMessage();
+@@ -74,30 +108,7 @@ public class OperationsUtil {
+ 			//do nothing
+ 		}
+
+-		//we will not send an error immediately, but we need to have an indication when one occurs...
+-		String message = null;
+-		if (creditActId < 0){
+-			message = "Destination account is invalid";
+-		} else if (debitAct == null) {
+-			message = "Originating account is invalid";
+-		} else if (amount < 0){
+-			message = "Transfer amount is invalid";
+-		} else if (amount > debitAct.getBalance()){
+-			message = "Insufficient balance in originating account";
+-		}
+-
+-		//if transfer amount is zero then there is nothing to do
+-		if (message == null && amount > 0){
+-			message = DBUtil.transferFunds(userName, creditActId, debitAct.getAccountId(), amount);
+-		}
+-
+-		if (message != null){
+-			message = "ERROR: " + message;
+-		} else {
+-			message = amount + " was successfully transferred from Account " + debitAct.getAccountId() + " into Account " + creditActId + " at " + new SimpleDateFormat().format(new Date()) + ".";
+-		}
+-
+-		return message;
++		return transferAndGetMessage(userName, creditActId, debitAct, amount);
+ 	}
+
+ 	public static String sendFeedback(String name, String email,
+```
+
 ### Re-test steps
+
+Run the same script in the test steps and notice how the server returns an error instead:
+
+![alt text](image-10.png)
 
 ## Exploiting business logic flaw (negative money transfer in REST API)
 
@@ -959,9 +1288,17 @@ The debugging message was removed in a later patch.
 
 ### Fix explanation
 
+Fixed in the previous vulnerability by abstracting the business logic checking code in a common function that is called by both `OperationsUtil.doServletTransfer` and `OperationsUtil.doApiTransfer`.
+
 ### Fix patch
 
+Fixed in the previous vulnerability by abstracting the business logic checking code in a common function that is called by both `OperationsUtil.doServletTransfer` and `OperationsUtil.doApiTransfer`.
+
 ### Re-test steps
+
+Run the same script in the test steps and notice how the server returns an error instead:
+
+![alt text](image-11.png)
 
 ## Bypassing access control (sending money from a foreign account in the REST API)
 
