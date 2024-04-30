@@ -1884,15 +1884,45 @@ Visit `/admin/admin.jsp` as an unauthorized user and notice how you are redirect
 
 ### Fix explanation
 
+Use the function `ServletUtil.sanitizeWeb` to sanitize the request parameter before placing it on the DOM
+
 ### Fix patch
 
+```diff
+diff --git a/src/WebContent/bank/customize.jsp b/src/WebContent/bank/customize.jsp
+index 66c815c..99f56e1 100644
+--- a/src/WebContent/bank/customize.jsp
++++ b/src/WebContent/bank/customize.jsp
+@@ -20,6 +20,7 @@ IBM AltoroJ
+ (c) Copyright IBM Corp. 2008, 2013 All Rights Reserved.
+ */
+ %>
++<%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil" errorPage="notfound.jsp"%>
+
+ <jsp:include page="/header.jspf"/>
+
+@@ -41,7 +42,7 @@ IBM AltoroJ
+
+ 		<form method="post">
+ 		  <p>
+-		  Current Language: <%=(request.getParameter("lang")==null)?"":request.getParameter("lang")%>
++		  Current Language: <%=(request.getParameter("lang")==null)?"":ServletUtil.sanitizeWeb(request.getParameter("lang"))%>
+ 		  </p>
+
+ 		  <p>
+```
+
 ### Re-test steps
+
+Follow the same test steps and observe the HTML code appears as normal text instead of being injected:
+
+![alt text](image-18.png)
 
 ## Cross site scripting in `/search.jsp`
 
 ### Test steps
 
-- You are the victim, visit `/search.jsp?query=%3Cform%3E%3Clabel%3Eevil+username%3C%2Flabel%3E%3Cinput+type%3D%22text%22%3E%3Cbr%3E%3Clabel%3Eevil+password%3C%2Flabel%3E%3Cinput+type%3D%22password%22%3E%3C%2Fform%3E` and observe how an evil form was injected:
+You are the victim, visit `/search.jsp?query=%3Cform%3E%3Clabel%3Eevil+username%3C%2Flabel%3E%3Cinput+type%3D%22text%22%3E%3Cbr%3E%3Clabel%3Eevil+password%3C%2Flabel%3E%3Cinput+type%3D%22password%22%3E%3C%2Fform%3E` and observe how an evil form was injected:
 
 ![XSS in search.jsp](images/image-35.png)
 
@@ -1902,9 +1932,31 @@ Visit `/admin/admin.jsp` as an unauthorized user and notice how you are redirect
 
 ### Fix explanation
 
+Use the function `ServletUtil.sanitizeWeb` to sanitize the request parameter before placing it on the DOM
+
 ### Fix patch
 
+```diff
+diff --git a/src/WebContent/search.jsp b/src/WebContent/search.jsp
+index cccd7ae..47eb9b5 100644
+--- a/src/WebContent/search.jsp
++++ b/src/WebContent/search.jsp
+@@ -41,7 +41,7 @@ IBM AltoroJ
+
+ 		<p>No results were found for the query:<br /><br />
+
+-		<%= query %>
++		<%= ServletUtil.sanitizeWeb(query) %>
+
+ 		</div>
+     </td>
+```
+
 ### Re-test steps
+
+Follow the same test steps and observe the HTML code appears as normal text instead of being injected:
+
+![alt text](image-19.png)
 
 ## Cross site scripting in `/util/serverStatusCheckService.jsp`
 
@@ -1920,9 +1972,32 @@ Visit `/admin/admin.jsp` as an unauthorized user and notice how you are redirect
 
 ### Fix explanation
 
+Use the function `ServletUtil.sanitizeWeb` to sanitize the request parameter before placing it on the DOM
+
 ### Fix patch
 
+```diff
+diff --git a/src/WebContent/util/serverStatusCheckService.jsp b/src/WebContent/util/serverStatusCheckService.jsp
+index 2737276..5263c79 100644
+--- a/src/WebContent/util/serverStatusCheckService.jsp
++++ b/src/WebContent/util/serverStatusCheckService.jsp
+@@ -1,6 +1,7 @@
+ <%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
++<%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil" errorPage="notfound.jsp"%>
+
+ {
+-	"HostName": "<%=request.getParameter("HostName")%>",
++	"HostName": "<%=ServletUtil.sanitizeWeb(request.getParameter("HostName"))%>",
+ 	"HostStatus": "OK"
+ }
+\ No newline at end of file
+```
+
 ### Re-test steps
+
+Follow the same test steps and observe the HTML code appears as normal text instead of being injected:
+
+![alt text](image-20.png)
 
 ## Cross site scripting in `/bank/queryxpath.jsp`
 
@@ -1940,9 +2015,31 @@ Visit `/admin/admin.jsp` as an unauthorized user and notice how you are redirect
 
 ### Fix explanation
 
+Use the function `ServletUtil.sanitizeWeb` to sanitize the request parameter before placing it on the DOM
+
 ### Fix patch
 
+```diff
+diff --git a/src/WebContent/bank/queryxpath.jsp b/src/WebContent/bank/queryxpath.jsp
+index cdc88dd..4191017 100644
+--- a/src/WebContent/bank/queryxpath.jsp
++++ b/src/WebContent/bank/queryxpath.jsp
+@@ -33,7 +33,7 @@ IBM AltoroJ
+ 			  Search our news articles database
+ 			  <br /><br />
+ 				<input type="hidden" id=content" name="content" value="queryxpath.jsp"/>
+-				<input type="text" id="query" name="query" width=450 value="<%=(request.getParameter("query")==null)?"Enter title (e.g. Watchfire)":request.getParameter("query")%>"/>
++				<input type="text" id="query" name="query" width=450 value="<%=(request.getParameter("query")==null)?"Enter title (e.g. Watchfire)":ServletUtil.sanitizeWeb(request.getParameter("query"))%>"/>
+ 				<input type="submit" width=75 id="Button1" value="Query">
+ 			  <br /><br />
+ 			<%
+```
+
 ### Re-test steps
+
+Follow the same test steps and observe the HTML code appears as normal text instead of being injected:
+
+![alt text](image-21.png)
 
 ## Cross site scripting in `/bank/transaction.jsp`
 
@@ -1960,9 +2057,47 @@ Visit `/admin/admin.jsp` as an unauthorized user and notice how you are redirect
 
 ### Fix explanation
 
+Use the function `ServletUtil.sanitizeWeb` to sanitize the request parameter before placing it on the DOM
+
 ### Fix patch
 
+```diff
+diff --git a/src/WebContent/bank/transaction.jsp b/src/WebContent/bank/transaction.jsp
+index dc58e30..48f802b 100644
+--- a/src/WebContent/bank/transaction.jsp
++++ b/src/WebContent/bank/transaction.jsp
+@@ -32,6 +32,8 @@ IBM AltoroJ
+
+ 		<%@page import="java.util.Date"%>
+ 		<%@page import="com.ibm.security.appscan.altoromutual.model.Transaction"%>
++		<%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil" errorPage="notfound.jsp"%>
++
+
+ 		<div class="fl" style="width: 99%;">
+
+@@ -123,9 +125,9 @@ IBM AltoroJ
+ 		<table border="0" style="padding-bottom:10px;">
+ 		    <tr>
+ 		        <td valign=top>After</td>
+-		        <td><input id="startDate" name="startDate" type="text" value="<%=(request.getParameter("startDate")==null)?"":request.getParameter("startDate")%>"/><br /><span class="credit">yyyy-mm-dd</span></td>
++		        <td><input id="startDate" name="startDate" type="text" value="<%=(request.getParameter("startDate")==null)?"":ServletUtil.sanitizeWeb(request.getParameter("startDate"))%>"/><br /><span class="credit">yyyy-mm-dd</span></td>
+ 		        <td valign=top>Before</td>
+-		        <td><input name="endDate" id="endDate" type="text" value="<%=(request.getParameter("endDate")==null)?"":request.getParameter("endDate") %>"/><br /><span class="credit">yyyy-mm-dd</span></td>
++		        <td><input name="endDate" id="endDate" type="text" value="<%=(request.getParameter("endDate")==null)?"":ServletUtil.sanitizeWeb(request.getParameter("endDate")) %>"/><br /><span class="credit">yyyy-mm-dd</span></td>
+ 		        <td valign=top><input type=submit value=Submit /></td>
+ 		    </tr>
+ 		</table>
+```
+
 ### Re-test steps
+
+- Follow the same test steps and observe the HTML code appears as normal text instead of being injected:
+
+![alt text](image-22.png)
+
+- Change the `startDate` parameter to `endDate` and observe how there is still no injection:
+
+![alt text](image-23.png)
 
 ## Cross site scripting in `/bank/feedbacksuccess.jsp`
 
@@ -1974,13 +2109,77 @@ You are the vitim, visit `/feedbacksuccess.jsp?email_addr=%3Cform%20method=%22PO
 
 ### Cause
 
-The `sanitzieHtmlWithRegex` method that `feedbacksuccess.jsp` uses does not exhaustively sanitize the request parameter before placing it on the DOM
+The `ServerUtil.sanitzieHtmlWithRegex` method that `feedbacksuccess.jsp` uses does not exhaustively sanitize the request parameter before placing it on the DOM
 
 ### Fix explanation
 
+Replace usages of `ServerUtil.sanitzieHtmlWithRegex` with `ServerUtil.sanitizeWeb`
+
 ### Fix patch
 
+```diff
+diff --git a/src/WebContent/feedbacksuccess.jsp b/src/WebContent/feedbacksuccess.jsp
+index 0b53b24..44dd5d0 100644
+--- a/src/WebContent/feedbacksuccess.jsp
++++ b/src/WebContent/feedbacksuccess.jsp
+@@ -43,9 +43,9 @@ IBM AltoroJ
+ 		 <% String email = (String) request.getParameter("email_addr");
+ 		 	boolean regExMatch = email!=null && email.matches(ServletUtil.EMAIL_REGEXP);
+ 		 	if (email != null && email.trim().length() != 0 && regExMatch) {%>
+-			 Our reply will be sent to your email: <%= ServletUtil.sanitzieHtmlWithRegex(email.toLowerCase())/*ServletUtil.sanitizeWeb(email.toLowerCase())*/%>
++			 Our reply will be sent to your email: <%=ServletUtil.sanitizeWeb(email.toLowerCase())%>
+ 		<% } else {%>
+-			However, the email you gave is incorrect (<%=ServletUtil.sanitzieHtmlWithRegex(email.toLowerCase()) /*ServletUtil.sanitizeWeb(email.toLowerCase())*/%>) and you will not receive a response.
++			However, the email you gave is incorrect (<%=ServletUtil.sanitizeWeb(email.toLowerCase())%>) and you will not receive a response.
+ 		<% }%>
+ 		</p>
+ 		<% if (ServletUtil.isAppPropertyTrue("enableFeedbackRetention")){%>
+diff --git a/src/WebContent/index.jsp b/src/WebContent/index.jsp
+index a00e710..a067d02 100644
+--- a/src/WebContent/index.jsp
++++ b/src/WebContent/index.jsp
+@@ -92,7 +92,7 @@ IBM AltoroJ
+ 				%>
+ 				<%=text %>
+ 			<%  } catch (Exception e) { %>
+-				<p>Failed due to <%= ServletUtil.sanitzieHtmlWithRegex(e.getLocalizedMessage()) %></p>
++				<p>Failed due to <%= ServletUtil.sanitizeWeb(e.getLocalizedMessage()) %></p>
+ 	 		<% } %>
+ 		<%
+ 		} else {
+@@ -108,7 +108,7 @@ IBM AltoroJ
+ 		<%  try { %>
+ 			<jsp:include page="<%= content %>"/>
+ 		<%  } catch (Exception e) { %>
+-			<p>Failed due to <%= ServletUtil.sanitzieHtmlWithRegex(e.getLocalizedMessage()) %></p>
++			<p>Failed due to <%= ServletUtil.sanitizeWeb(e.getLocalizedMessage()) %></p>
+  		<% }
+ 		}%>
+     </td>
+diff --git a/src/src/com/ibm/security/appscan/altoromutual/util/ServletUtil.java b/src/src/com/ibm/security/appscan/altoromutual/util/ServletUtil.java
+index 81fb326..c1833fc 100644
+--- a/src/src/com/ibm/security/appscan/altoromutual/util/ServletUtil.java
++++ b/src/src/com/ibm/security/appscan/altoromutual/util/ServletUtil.java
+@@ -243,13 +243,6 @@ public class ServletUtil {
+ 		return StringEscapeUtils.escapeHtml(data);
+ 	}
+
+-	public static String sanitzieHtmlWithRegex(String input) {
+-		if (XSS_REGEXP.matcher(input).matches()) {
+-			return "";
+-		}
+-		return input;
+-	}
+-
+ 	/* initializes AltoroJ demo properties table */
+ 	public static void initializeAppProperties(ServletContext servletContext) {
+```
+
 ### Re-test steps
+
+Follow the same test steps and observe the HTML code appears as normal text instead of being injected:
+
+![alt text](image-24.png)
 
 ## Unvalidated redirect in `/bank/customize.jsp`
 
@@ -1995,3 +2194,94 @@ The `sanitzieHtmlWithRegex` method that `feedbacksuccess.jsp` uses does not exha
 ### Cause
 
 `customize.jsp` sends a redirect header to whatever is in the `content` request parameter
+
+### Fix explanation
+
+Redirect to the disclaimer page that shows the user that he is about to be redirected off the website instead of redirecting them directly
+
+### Fix patch
+
+```diff
+diff --git a/src/WebContent/bank/customize.jsp b/src/WebContent/bank/customize.jsp
+index 99f56e1..d1c9e0f 100644
+--- a/src/WebContent/bank/customize.jsp
++++ b/src/WebContent/bank/customize.jsp
+@@ -33,7 +33,7 @@ IBM AltoroJ
+ 			String content = request.getParameter("content");
+ 			if (content != null && !content.equalsIgnoreCase("customize.jsp")){
+ 				if (content.startsWith("http://") || content.startsWith("https://")){
+-					response.sendRedirect(content);
++					response.sendRedirect(request.getContextPath() + "/disclaimer.htm?url=" + content);
+ 				}
+ 			}
+ 		%>
+```
+
+### Re-test steps
+
+Follow the same test steps and observe how you are redirected to the disclaimer page instead:
+
+![alt text](image-25.png)
+
+## Additional patches
+
+Improvements to the previous patches:
+
+### Remove error page from imports in jsps
+
+```diff
+diff --git a/src/WebContent/bank/customize.jsp b/src/WebContent/bank/customize.jsp
+index d1c9e0f..865991a 100644
+--- a/src/WebContent/bank/customize.jsp
++++ b/src/WebContent/bank/customize.jsp
+@@ -20,7 +20,7 @@ IBM AltoroJ
+ (c) Copyright IBM Corp. 2008, 2013 All Rights Reserved.
+ */
+ %>
+-<%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil" errorPage="notfound.jsp"%>
++<%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil"%>
+
+ <jsp:include page="/header.jspf"/>
+
+diff --git a/src/WebContent/bank/transaction.jsp b/src/WebContent/bank/transaction.jsp
+index 48f802b..d5a5e40 100644
+--- a/src/WebContent/bank/transaction.jsp
++++ b/src/WebContent/bank/transaction.jsp
+@@ -32,7 +32,7 @@ IBM AltoroJ
+
+ 		<%@page import="java.util.Date"%>
+ 		<%@page import="com.ibm.security.appscan.altoromutual.model.Transaction"%>
+-		<%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil" errorPage="notfound.jsp"%>
++		<%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil"%>
+
+
+ 		<div class="fl" style="width: 99%;">
+diff --git a/src/WebContent/util/serverStatusCheckService.jsp b/src/WebContent/util/serverStatusCheckService.jsp
+index 5263c79..e86e34a 100644
+--- a/src/WebContent/util/serverStatusCheckService.jsp
++++ b/src/WebContent/util/serverStatusCheckService.jsp
+@@ -1,5 +1,5 @@
+ <%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
+-<%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil" errorPage="notfound.jsp"%>
++<%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil"%>
+
+ {
+ 	"HostName": "<%=ServletUtil.sanitizeWeb(request.getParameter("HostName"))%>",
+```
+
+### Remove debugging message
+
+```diff
+diff --git a/src/WebContent/index.jsp b/src/WebContent/index.jsp
+index a067d02..baf1e15 100644
+--- a/src/WebContent/index.jsp
++++ b/src/WebContent/index.jsp
+@@ -98,7 +98,6 @@ IBM AltoroJ
+ 		} else {
+ 			String basePath = "static";
+ 			Path resolved = Paths.get(basePath).resolve(content).normalize();
+-			System.out.println(resolved);
+ 			if (resolved.startsWith(basePath))
+ 				content = resolved.toString();
+ 			else
+```
