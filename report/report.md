@@ -516,18 +516,18 @@ index 0de05f2..aa3bd9d 100644
 @@ -377,43 +377,46 @@ public class DBUtil {
  		if (accounts == null || accounts.length == 0)
  			return null;
- 
+
 -			Connection connection = getConnection();
 +		StringBuffer acctIds = new StringBuffer();
 +		acctIds.append("ACCOUNTID = ?");
 +		for (int i=1; i<accounts.length; i++){
-+			acctIds.append(" OR ACCOUNTID = ?");	
++			acctIds.append(" OR ACCOUNTID = ?");
 +		}
-+		
++
 +		String dateString = null;
 +		boolean startDateExists = false;
 +		boolean endDateExists = false;
-+		
++
 +		if (startDate != null && startDate.length()>0 && endDate != null && endDate.length()>0){
 +			startDateExists = true;
 +			endDateExists = true;
@@ -539,13 +539,13 @@ index 0de05f2..aa3bd9d 100644
 +			endDateExists = true;
 +			dateString = "DATE < ?";
 +		}
-+		
++
 +		String query = "SELECT * FROM TRANSACTIONS WHERE (" + acctIds.toString() + ") " + ((dateString==null)?"": "AND (" + dateString + ") ") + "ORDER BY DATE DESC" ;
 +		ArrayList<Transaction> transactions = new ArrayList<Transaction>();
- 
--			
+
+-
 -			Statement statement = connection.createStatement();
--			
+-
 +		Connection connection = getConnection();
 +		try (PreparedStatement statement = connection.prepareStatement(query)) {
  			if (rowCount > 0)
@@ -554,14 +554,14 @@ index 0de05f2..aa3bd9d 100644
 -			StringBuffer acctIds = new StringBuffer();
 -			acctIds.append("ACCOUNTID = " + accounts[0].getAccountId());
 -			for (int i=1; i<accounts.length; i++){
--				acctIds.append(" OR ACCOUNTID = "+accounts[i].getAccountId());	
+-				acctIds.append(" OR ACCOUNTID = "+accounts[i].getAccountId());
 +			int i = 1;
 +			for (; i<=accounts.length; i++){
 +				statement.setString(i, String.valueOf(accounts[i - 1].getAccountId()));
  			}
--			
+-
 -			String dateString = null;
--			
+-
 -			if (startDate != null && startDate.length()>0 && endDate != null && endDate.length()>0){
 -				dateString = "DATE BETWEEN '" + startDate + " 00:00:00' AND '" + endDate + " 23:59:59'";
 -			} else if (startDate != null && startDate.length()>0){
@@ -571,17 +571,17 @@ index 0de05f2..aa3bd9d 100644
 +			if (startDateExists) {
 +				statement.setString(i++, startDate + " 00:00:00");
  			}
--			
+-
 -			String query = "SELECT * FROM TRANSACTIONS WHERE (" + acctIds.toString() + ") " + ((dateString==null)?"": "AND (" + dateString + ") ") + "ORDER BY DATE DESC" ;
 -			ResultSet resultSet = null;
--			
+-
 -			try {
 -				resultSet = statement.executeQuery(query);
 -			} catch (SQLException e){
 -				int errorCode = e.getErrorCode();
 -				if (errorCode == 30000)
 -					throw new SQLException("Date-time query must be in the format of yyyy-mm-dd HH:mm:ss", e);
--				
+-
 -				throw e;
 +			if (endDateExists) {
 +				statement.setString(i++, endDate + " 23:59:59");
@@ -595,18 +595,18 @@ index 0de05f2..aa3bd9d 100644
  				double amount = resultSet.getDouble("AMOUNT");
  				transactions.add(new Transaction(transId, actId, date, desc, amount));
  			}
--			
--			return transactions.toArray(new Transaction[transactions.size()]); 
+-
+-			return transactions.toArray(new Transaction[transactions.size()]);
 +		} catch (SQLException e){
 +			int errorCode = e.getErrorCode();
 +			if (errorCode == 20000)
 +				throw new SQLException("Date-time query must be in the format of yyyy-mm-dd HH:mm:ss", e);
 +			throw e;
 +		}
-+		
-+		return transactions.toArray(new Transaction[transactions.size()]); 
++
++		return transactions.toArray(new Transaction[transactions.size()]);
  	}
- 
+
  	public static String[] getBankUsernames() {
 ```
 
@@ -662,9 +662,17 @@ SELECT * FROM TRANSACTIONS WHERE (ACCOUNTID = "whatever" OR ACCOUNTID = "whateve
 
 ### Fix explanation
 
+Fixed by fixing the previous vulnerability since it shared the same vulnerable code.
+
 ### Fix patch
 
+Fixed by fixing the previous vulnerability since it shared the same vulnerable code.
+
 ### Re-test steps
+
+Run the same script in the test steps and observe how the server returns an error instead:
+
+![alt text](image-4.png)
 
 ## Unauthorized file access (`Q3_earnings.rtf`)
 
@@ -692,9 +700,22 @@ Everything under the `WebContent` directory and not in the `WEB-INF` directory i
 
 ### Fix explanation
 
+Move the `Q3_earnings.rtf` file outside of the `WebContent` directory.
+
 ### Fix patch
 
+```diff
+diff --git a/src/WebContent/pr/Q3_earnings.rtf b/src/confidential/Q3_earnings.rtf
+similarity index 100%
+rename from src/WebContent/pr/Q3_earnings.rtf
+rename to src/confidential/Q3_earnings.rtf
+```
+
 ### Re-test steps
+
+Do the same test steps and observe how the server returns a "not found" error instead:
+
+![alt text](image-5.png)
 
 ## Unauthorized file access (`Draft.rtf`)
 
@@ -722,9 +743,22 @@ Everything under the `WebContent` directory and not in the `WEB-INF` directory i
 
 ### Fix explanation
 
+Move the `Draft.rtf` file outside of the `WebContent` directory.
+
 ### Fix patch
 
+```diff
+diff --git a/src/WebContent/pr/Draft.rtf b/src/confidential/Draft.rtf
+similarity index 100%
+rename from src/WebContent/pr/Draft.rtf
+rename to src/confidential/Draft.rtf
+```
+
 ### Re-test steps
+
+Do the same test steps and observe how the server returns a "not found" error instead:
+
+![alt text](image-6.png)
 
 ## Path traversal attack
 
@@ -744,9 +778,50 @@ In `index.jsp`, content is served from the `static/` directory using user provid
 
 ### Fix explanation
 
+In `index.jsp`, if the resulting path's base directory is not `static/`, return the `static/default.htm` page.
+
 ### Fix patch
 
+```diff
+diff --git a/src/WebContent/index.jsp b/src/WebContent/index.jsp
+index f3e30b1..a00e710 100644
+--- a/src/WebContent/index.jsp
++++ b/src/WebContent/index.jsp
+@@ -1,4 +1,6 @@
+ <%@page import="java.io.BufferedReader"%>
++<%@page import="java.nio.file.Paths"%>
++<%@page import="java.nio.file.Path"%>
+ <%@page import="java.io.InputStream"%>
+ <%@page import="java.io.InputStreamReader"%>
+ <%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil"%>
+@@ -94,7 +96,13 @@ IBM AltoroJ
+ 	 		<% } %>
+ 		<%
+ 		} else {
+-			content = "static/"+content;
++			String basePath = "static";
++			Path resolved = Paths.get(basePath).resolve(content).normalize();
++			System.out.println(resolved);
++			if (resolved.startsWith(basePath))
++				content = resolved.toString();
++			else
++				content = "static/default.htm";
+ 		%>
+
+ 		<%  try { %>
+```
+
+The debugging message was removed in a later patch.
+
 ### Re-test steps
+
+- Visit `/index.jsp?content=../WEB-INF/app.properties` and observe how the server returns the deafult page:
+
+![alt text](image-7.png)
+
+- Visit `/index.jsp?content=../WEB-INF/web.xml` and observe how the server returns the deafult page:
+
+![alt text](image-8.png)
 
 ## Exploiting business logic flaw (excessive money transfer)
 

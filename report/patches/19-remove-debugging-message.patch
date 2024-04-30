@@ -1,0 +1,12 @@
+diff --git a/src/WebContent/index.jsp b/src/WebContent/index.jsp
+index a067d02..baf1e15 100644
+--- a/src/WebContent/index.jsp
++++ b/src/WebContent/index.jsp
+@@ -98,7 +98,6 @@ IBM AltoroJ
+ 		} else {
+ 			String basePath = "static";
+ 			Path resolved = Paths.get(basePath).resolve(content).normalize();
+-			System.out.println(resolved);
+ 			if (resolved.startsWith(basePath))
+ 				content = resolved.toString();
+ 			else

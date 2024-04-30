@@ -98,7 +98,6 @@ IBM AltoroJ
 		} else {
 			String basePath = "static";
 			Path resolved = Paths.get(basePath).resolve(content).normalize();
-			System.out.println(resolved);
 			if (resolved.startsWith(basePath))
 				content = resolved.toString();
 			else
