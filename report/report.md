@@ -209,7 +209,7 @@ header-includes: |
 - **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil script or form that can cause the victim's data to be stolen
 - **Recommendations:** follow OWASP's recommendations in the link in the description of the type of the vulnerability
 
-## Cross site scripting in `/bank/queryxpath.jsp`
+## Cross site scripting in `/bank/transaction.jsp`
 
 - **Test CVSS severity**: High
 - **Test CVSS score:** 8.6
@@ -788,7 +788,7 @@ The admin URL pattern in `AdminFilter` in `web.xml` is misspelled (`/adimn/*` in
 
 `queryxpath.jsp` does not sanitize the request parameter before placing it on the DOM
 
-## Cross site scripting in `/bank/queryxpath.jsp`
+## Cross site scripting in `/bank/transaction.jsp`
 
 ### Test steps
 

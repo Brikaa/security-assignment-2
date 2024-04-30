@@ -33,7 +33,7 @@ IBM AltoroJ
 			  Search our news articles database
 			  <br /><br />
 				<input type="hidden" id=content" name="content" value="queryxpath.jsp"/>
-				<input type="text" id="query" name="query" width=450 value="<%=(request.getParameter("query")==null)?"Enter title (e.g. Watchfire)":request.getParameter("query")%>"/>
+				<input type="text" id="query" name="query" width=450 value="<%=(request.getParameter("query")==null)?"Enter title (e.g. Watchfire)":ServletUtil.sanitizeWeb(request.getParameter("query"))%>"/>
 				<input type="submit" width=75 id="Button1" value="Query">
 			  <br /><br />
 			<%
