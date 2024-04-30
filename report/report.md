@@ -1,19 +1,27 @@
 ---
 geometry: margin=2cm
 header-includes: |
+  \usepackage{fvextra}
+  \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\},breaksymbol=}
   \definecolor{bg}{HTML}{f2f2f2}
   \pagecolor{bg}
 ---
 
-# Findings details
+# Notes
 
-<!-- TODO: Severity after retest -->
+- Additional properties on the system were not enabled. This makes the system consistent with the online demo at <http://demo.testfire.net/> and hence the exploits will also work there. Enabling the additional properties does introduce other vulnerabilities, but I have already found 23 vulnerabilities.
+- If you want to test on <http://demo.testfire.net/> or on your local instance, make sure to replace the `/altoromutual` part in the URLs in the exploits JavaScript scripts to the base path on which the website is hosted. For example, in case of the <http://demo.testfire.net/>, there is no base path so the `/altoromutual` part of the URL has to be removed in the scripts.
+- Code patches are applied in the order they appear.
+- The system provides an additional API (we'll refer to it as the REST API) in addition to the API the frontend uses to communicate with the backend. Some same vulnerabilities are discovered through both APIs; these are not duplicates. They are two entry points to the same vulnerability and should be tested separately.
+
+# Findings details
 
 ## SQL injection in log in
 
 - **Test CVSS severity**: critical
 - **Test CVSS score:** 9.3
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N`
+- **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/SQL_Injection>
 - **Description of the vulnerability:** an attacker can `bypass` the correct username/password check in the login by having the username as `asd' or 1=1 --` and the password as anything.
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to bypass login
@@ -24,6 +32,7 @@ header-includes: |
 - **Test CVSS severity**: High
 - **Test CVSS score:** 8.7
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
+- **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/SQL_Injection>
 - **Description of the vulnerability:** an attacker can list all bank accounts on the system by passing the username as `asd' or 1=1 --` in the rest api authentication token and submitting a GET request to `/api/account`.
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to list all bank accounts on the system
@@ -34,6 +43,7 @@ header-includes: |
 - **Test CVSS severity**: High
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
+- **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/SQL_Injection>
 - **Description of the vulnerability:** an attacker can list all transactions on the system by bypassing the front-end validation in the transactions filtering page and setting the start date as `2018-06-11` and the end date as `2018-06-11 23:59:59') OR 1=1 --`
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to list all transactions on the system
@@ -44,6 +54,7 @@ header-includes: |
 - **Test CVSS severity**: High
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
+- **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/SQL_Injection>
 - **Description of the vulnerability:** an attacker can list all transactions on the system by setting the start date as `2018-06-11` and the end date as `2018-06-11 23:59:59') OR 1=1 --` in the transaction listing REST API endpoint (`POST /api/account/800004/transactions`)
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to list all bank accounts on the system
@@ -54,6 +65,7 @@ header-includes: |
 - **Test CVSS severity**: High
 - **Test CVSS score:** 8.7
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
+- **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** An attacker can access a file they should not be allowed to access
 - **Description of the vulnerability:** an attacker can download the bank's confidential earnings via visiting `/pr/Q3_earnings.rtf`.
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to download the bank's confidential earnings
@@ -64,6 +76,7 @@ header-includes: |
 - **Test CVSS severity**: High
 - **Test CVSS score:** 8.7
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
+- **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** An attacker can access a file they should not be allowed to access
 - **Description of the vulnerability:** an attacker can download the bank's confidential draft via visiting `/pr/Draft.rtf`.
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to download the bank's confidential draft
@@ -74,6 +87,7 @@ header-includes: |
 - **Test CVSS severity**: Critical
 - **Test CVSS score:** 9.2
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:N/VA:N/SC:H/SI:N/SA:N`
+- **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/Path_Traversal>
 - **Description of the vulnerability:** an attacker can access configuration files that can contain secrets under `WebContent/WEB-INF` by going to `/index.jsp?content=../WEB-INF/name_of_the_file` (e.g, `/index.jsp?content=../WEB-INF/app.properties`)
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to access configuration files in the `WebContent/WEB-INF` directory which can contain passwords.
@@ -84,6 +98,7 @@ header-includes: |
 - **Test CVSS severity**: High
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N`
+- **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** a defect in the business logic (lack of input validation)
 - **Description of the vulnerability:** an attacker can transfer an amount (AM) of money from their account (A) to their other account (B) even if the amount (AM) exceeds the balance in account (A).
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to put an unlimited amount of money on one of their accounts and put a negative amount of money on another one of their accounts.
@@ -94,6 +109,7 @@ header-includes: |
 - **Test CVSS severity**: High
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N`
+- **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** a defect in the business logic (lack of REST API request body validation)
 - **Description of the vulnerability:** an attacker can transfer an amount (AM) of money from their account (A) to their other account (B) even if the amount (AM) exceeds the balance in account (A).
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to put an unlimited amount of money on one of their accounts and put a negative amount of money on another one of their accounts.
@@ -104,6 +120,7 @@ header-includes: |
 - **Test CVSS severity**: High
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N`
+- **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** a defect in the business logic (lack of REST API request body validation)
 - **Description of the vulnerability:** an attacker can transfer a negative amount of money from their account to another account
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to transfer a negative amount of money from an account to another leading to an decrease of money in the receiving account and a increase of money in the sending account
@@ -114,6 +131,7 @@ header-includes: |
 - **Test CVSS severity**: High
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N`
+- **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** a defect in the access control (lack of REST API request body validation)
 - **Description of the vulnerability:** an attacker can transfer an amount of money from accounts that do not belong to them
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to transfer an amount of money from accounts that do not belong to them
@@ -124,6 +142,7 @@ header-includes: |
 - **Test CVSS severity**: High
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N`
+- **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** a defect in the access control (treating cookies as a trusted source of truth of the authorities)
 - **Description of the vulnerability:** an attacker can transfer an amount of money from accounts that do not belong to them by modifying a cookie that represents what accounts belong to the user
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to transfer an amount of money from accounts that do not belong to them
@@ -134,6 +153,7 @@ header-includes: |
 - **Test CVSS severity**: High
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
+- **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** a defect in the access control (not doing backend validation on who is viewing the account)
 - **Description of the vulnerability:** an attacker can view the account details of another user through the `/bank/showAccount` page
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to view the details of foreign accounts violating their privacy
@@ -144,6 +164,7 @@ header-includes: |
 - **Test CVSS severity**: High
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
+- **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** a defect in the access control (not validating who is GET'ing the account in the REST API)
 - **Description of the vulnerability:** an attacker can view the account details of another user through the `GET /api/account` endpoint
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to view the details foreign accounts violating their privacy
@@ -154,6 +175,7 @@ header-includes: |
 - **Test CVSS severity**: High
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N`
+- **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** a defect in the access control (not validating who is GET'ing the last ten transactions of an account in the REST API)
 - **Description of the vulnerability:** an attacker can view the last ten transactions of an account of another user through the `GET /api/account` endpoint
 - **Impact:** severe impact; successful exploitation gives the attacker the ability to view the last ten transactions of foreign accounts violating their privacy
@@ -164,6 +186,7 @@ header-includes: |
 - **Test CVSS severity**: High
 - **Test CVSS score:** 8.6
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N`
+- **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** a defect in the access control (improper validation on who is accessing the admin pages)
 - **Description of the vulnerability:** an attacker can view the admin pages and take admin actions by visiting `/admin/admin.jsp`
 - **Impact:** severe impact; successful exploitation gives the attacker admin privileges
@@ -174,6 +197,7 @@ header-includes: |
 - **Test CVSS severity**: High
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:L/VA:N/SC:N/SI:N/SA:N`
+- **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
 - **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `lang` parameter in `/bank/customize.jsp`
 - **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but the page can contain an evil script or form that can cause the victim's data to be stolen
@@ -184,6 +208,7 @@ header-includes: |
 - **Test CVSS severity**: High
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:L/VA:N/SC:N/SI:N/SA:N`
+- **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
 - **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `query` parameter in `/search.jsp`
 - **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but the page can contain an evil script or form that can cause the victim's data to be stolen
@@ -194,6 +219,7 @@ header-includes: |
 - **Test CVSS severity**: High
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:L/VA:N/SC:N/SI:N/SA:N`
+- **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
 - **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `HostName` parameter in `/util/serverStatusCheckService.jsp`
 - **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but the page can contain an evil script or form that can cause the victim's data to be stolen
@@ -204,6 +230,7 @@ header-includes: |
 - **Test CVSS severity**: High
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:L/VA:N/SC:N/SI:N/SA:N`
+- **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
 - **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `content` parameter in `/bank/queryxpath.jsp`
 - **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but the page can contain an evil script or form that can cause the victim's data to be stolen
@@ -214,6 +241,7 @@ header-includes: |
 - **Test CVSS severity**: High
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:L/VA:N/SC:N/SI:N/SA:N`
+- **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
 - **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `startDate` or `endDate` parameter in `/bank/transaction.jsp`
 - **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but the page can contain an evil script or form that can cause the victim's data to be stolen
@@ -224,6 +252,7 @@ header-includes: |
 - **Test CVSS severity**: High
 - **Test CVSS score:** 7.1
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:L/VA:N/SC:N/SI:N/SA:N`
+- **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
 - **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `email_addr` parameter in `/bank/feedbacksuccess.jsp`
 - **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but the page can contain an form that can cause the victim's data to be stolen
@@ -234,6 +263,7 @@ header-includes: |
 - **Test CVSS severity**: Medium
 - **Test CVSS score:** 5.3
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:L/VI:N/VA:N/SC:N/SI:N/SA:N`
+- **After re-test severity:** resolved
 - **Description of the type of the vulnerability:** <https://cheatsheetseries.owasp.org/cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.html>
 - **Description of the vulnerability:** an attacker can redirect the user to an arbitrary site by putting the website in the value of the `content` parameter in `/bank/customize.jsp`
 - **Impact:** medium impact; an attacker can send such link to other users; the link appears as if it is genuine but it can redirect the user to a phishing website and possibly steal their data
@@ -248,7 +278,7 @@ header-includes: |
 ### Test steps
 
 - Open /login.jsp
-- Login with the following credentials (password can be anything):
+- Login with the username as: `asd' or 1=1 --`, and the password as anything:
 
 ![Log in injected](images/image-2.png)
 
@@ -263,6 +293,53 @@ header-includes: |
 ```sql
 SELECT COUNT(*) FROM PEOPLE WHERE USER_ID = 'asd' or 1=1 -- AND PASSWORD='anything'")
 ```
+
+### Fix explanation
+
+Prepared statements with parameters setting are used in `DBUtil.isValidUser()` instead of string concatenation to form the query.
+
+### Fix patch
+
+```diff
+diff --git a/src/src/com/ibm/security/appscan/altoromutual/util/DBUtil.java b/src/src/com/ibm/security/appscan/altoromutual/util/DBUtil.java
+index 3031aa8..c7df6a3 100644
+--- a/src/src/com/ibm/security/appscan/altoromutual/util/DBUtil.java
++++ b/src/src/com/ibm/security/appscan/altoromutual/util/DBUtil.java
+@@ -29,6 +29,7 @@ import java.util.ArrayList;
+ import javax.naming.Context;
+ import javax.naming.InitialContext;
+ import javax.sql.DataSource;
++import java.sql.PreparedStatement;
+
+ import com.ibm.security.appscan.Log4AltoroJ;
+ import com.ibm.security.appscan.altoromutual.model.Account;
+@@ -214,16 +215,16 @@ public class DBUtil {
+ 			return false;
+
+ 		Connection connection = getConnection();
+-		Statement statement = connection.createStatement();
+-
+-		ResultSet resultSet =statement.executeQuery("SELECT COUNT(*)FROM PEOPLE WHERE USER_ID = '"+ user +"' AND PASSWORD='" + password + "'"); /* BAD - user input should always be sanitized */
+-
+-		if (resultSet.next()){
+-
++		try (PreparedStatement statement = connection.prepareStatement("SELECT COUNT(*) FROM PEOPLE WHERE USER_ID = ? AND PASSWORD = ?")) {
++			statement.setString(1, user);
++			statement.setString(2, password);
++			ResultSet resultSet = statement.executeQuery();
++			if (resultSet.next()){
+ 				if (resultSet.getInt(1) > 0)
+ 					return true;
++			}
++			return false;
+ 		}
+-		return false;
+ 	}
+```
+
+### Re-test steps
+
+- Enter the same credentials as the test steps and observe how the system says the username or password is incorrect
 
 ## SQL injection in REST API (accounts)
 
@@ -301,14 +378,12 @@ SELECT COUNT(*) FROM PEOPLE WHERE USER_ID = 'asd' or 1=1 -- AND PASSWORD='anythi
 
 - `DBUtil.getUserInfo()` method interpolates the user input in the SQL query; hence making the attacker able to execute arbitrary queries. The resulting query becomes:
   ```sql
-  SELECT FIRST_NAME,LAST_NAME,ROLE FROM PEOPLE
-  WHERE USER_ID = 'asd' or 1=1 --
+  SELECT FIRST_NAME,LAST_NAME,ROLE FROM PEOPLE WHERE USER_ID = 'asd' or 1=1 --
   ```
 - `DBUtil.getUserInfo()` returns the received username in the parameter rather than the one retrieved from the database (since it assumes they would be the same)
 - `DBUtil.getAccounts()` is then called with the modified username and also interpolates the SQL query with the user input; hence the resulting query becomes:
   ```sql
-  SELECT ACCOUNT_ID, ACCOUNT_NAME, BALANCE FROM ACCOUNTS
-  WHERE USERID = 'asd' or 1=1 --
+  SELECT ACCOUNT_ID, ACCOUNT_NAME, BALANCE FROM ACCOUNTS WHERE USERID = 'asd' or 1=1 --
   ```
   leading to returning all of the users in the database
 
@@ -338,9 +413,7 @@ SELECT COUNT(*) FROM PEOPLE WHERE USER_ID = 'asd' or 1=1 -- AND PASSWORD='anythi
 `DBUtil.getTransactions()` method interpolates the user input in the SQL query; hence making the attacker able to execute arbitrary queries. The resulting query becomes:
 
 ```sql
-SELECT * FROM TRANSACTIONS
-WHERE (ACCOUNTID = "whatever" OR ACCOUNTID = "whatever")
-AND (DATE BETWEEN '2018-06-11' AND '2018-06-11 23:59:59') OR 1=1 --') ORDER BY DATE DESC
+SELECT * FROM TRANSACTIONS WHERE (ACCOUNTID = "whatever" OR ACCOUNTID = "whatever") AND (DATE BETWEEN '2018-06-11' AND '2018-06-11 23:59:59') OR 1=1 --') ORDER BY DATE DESC
 ```
 
 ## SQL injection in REST API (transactions)
@@ -384,9 +457,7 @@ res = await (
 `DBUtil.getTransactions()` method interpolates the user input in the SQL query; hence making the attacker able to execute arbitrary queries. The resulting query becomes:
 
 ```sql
-SELECT * FROM TRANSACTIONS
-WHERE (ACCOUNTID = "whatever" OR ACCOUNTID = "whatever")
-AND (DATE BETWEEN '2018-06-11' AND '2018-06-11 23:59:59') OR 1=1 --') ORDER BY DATE DESC
+SELECT * FROM TRANSACTIONS WHERE (ACCOUNTID = "whatever" OR ACCOUNTID = "whatever") AND (DATE BETWEEN '2018-06-11' AND '2018-06-11 23:59:59') OR 1=1 --') ORDER BY DATE DESC
 ```
 
 ## Unauthorized file access (`Q3_earnings.rtf`)
