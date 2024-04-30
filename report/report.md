@@ -176,7 +176,7 @@ header-includes: |
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:L/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
 - **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `lang` parameter in `/bank/customize.jsp`
-- **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil script or form that can cause the victim's data to be stolen
+- **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but the page can contain an evil script or form that can cause the victim's data to be stolen
 - **Recommendations:** <https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html>
 
 ## Cross site scripting in `/search.jsp`
@@ -186,7 +186,7 @@ header-includes: |
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:L/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
 - **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `query` parameter in `/search.jsp`
-- **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil script or form that can cause the victim's data to be stolen
+- **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but the page can contain an evil script or form that can cause the victim's data to be stolen
 - **Recommendations:** <https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html>
 
 ## Cross site scripting in `/util/serverStatusCheckService.jsp`
@@ -196,7 +196,7 @@ header-includes: |
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:L/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
 - **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `HostName` parameter in `/util/serverStatusCheckService.jsp`
-- **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil script or form that can cause the victim's data to be stolen
+- **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but the page can contain an evil script or form that can cause the victim's data to be stolen
 - **Recommendations:** <https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html>
 
 ## Cross site scripting in `/bank/queryxpath.jsp`
@@ -206,7 +206,7 @@ header-includes: |
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:L/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
 - **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `content` parameter in `/bank/queryxpath.jsp`
-- **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil script or form that can cause the victim's data to be stolen
+- **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but the page can contain an evil script or form that can cause the victim's data to be stolen
 - **Recommendations:** <https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html>
 
 ## Cross site scripting in `/bank/transaction.jsp`
@@ -216,7 +216,7 @@ header-includes: |
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:L/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
 - **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `startDate` or `endDate` parameter in `/bank/transaction.jsp`
-- **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but it can contain an evil script or form that can cause the victim's data to be stolen
+- **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but the page can contain an evil script or form that can cause the victim's data to be stolen
 - **Recommendations:** <https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html>
 
 ## Cross site scripting in `/bank/feedbacksuccess.jsp`
@@ -226,8 +226,18 @@ header-includes: |
 - **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:H/VI:L/VA:N/SC:N/SI:N/SA:N`
 - **Description of the type of the vulnerability:** <https://owasp.org/www-community/attacks/xss/>
 - **Description of the vulnerability:** an attacker can inject arbitrary HTML/CSS/JavaScript by putting them in the `email_addr` parameter in `/bank/feedbacksuccess.jsp`
-- **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but it can contain an form that can cause the victim's data to be stolen
+- **Impact:** severe impact; an attacker can send such link to other users; the link appears as if it is genuine but the page can contain an form that can cause the victim's data to be stolen
 - **Recommendations:** <https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html>
+
+## Unvalidated redirect in `/bank/customize.jsp`
+
+- **Test CVSS severity**: Medium
+- **Test CVSS score:** 5.3
+- **Test CVSS vector:** `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:P/VC:L/VI:N/VA:N/SC:N/SI:N/SA:N`
+- **Description of the type of the vulnerability:** <https://cheatsheetseries.owasp.org/cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.html>
+- **Description of the vulnerability:** an attacker can redirect the user to an arbitrary site by putting the website in the value of the `content` parameter in `/bank/customize.jsp`
+- **Impact:** medium impact; an attacker can send such link to other users; the link appears as if it is genuine but it can redirect the user to a phishing website and possibly steal their data
+- **Recommendations:** <https://cheatsheetseries.owasp.org/cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.html>
 
 # Finding scenarios
 
@@ -824,3 +834,17 @@ You are the vitim, visit `/feedbacksuccess.jsp?email_addr=%3Cform%20method=%22PO
 ### Cause
 
 The `sanitzieHtmlWithRegex` method that `feedbacksuccess.jsp` uses does not exhaustively sanitize the request parameter before placing it on the DOM
+
+## Unvalidated redirect in `/bank/customize.jsp`
+
+### Test steps
+
+- Log in as any user (you will be the victim)
+
+- Visit `/bank/customize.jsp?content=https://www.google.com` and observe how you are redirected to `https://www.google.com` without warning.
+
+![Unvalidated redirect in customize.jsp](images/image-41.png)
+
+### Cause
+
+`customize.jsp` sends a redirect header to whatever is in the `content` request parameter

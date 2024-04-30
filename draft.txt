@@ -1,6 +1,5 @@
 - TODO
   - get rid of Account.getAccount()?
-  - Redirect vulnerability in customize.jsp
 
 - Notes
   - Apply patches in order
