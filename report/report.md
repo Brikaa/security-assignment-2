@@ -1424,7 +1424,7 @@ Do the same test steps above and observe how the server returns an error instead
 
 ### Fix explanation
 
-In `balance.jsp`, if the requested account is not an account of the user, show the details of the user's first account instead. Moreover, change `DBUtil.getAccount()` and its usages to take the username of the target user and filter the queried data accordingly.
+In `balance.jsp`, if the requested account is not an account of the user, show the details of the user's first account instead. Moreover, change `DBUtil.getAccount()` and its usages to take the username of the target user and filter the queried data accordingly (this will fix multiple other vulnerabilities below).
 
 ### Fix patch
 
@@ -1762,9 +1762,17 @@ res = await (
 
 ### Fix explanation
 
+Fixed while fixing the previous vulnerability.
+
 ### Fix patch
 
+Fixed while fixing the previous vulnerability.
+
 ### Re-test steps
+
+Run the same script in the test steps and notice how the server returns an error instead:
+
+![alt text](image-15.png)
 
 ## Bypassing access control (getting a the last ten transactions of a foreign account through the REST API)
 
@@ -1804,9 +1812,17 @@ res = await (
 
 ### Fix explanation
 
+Fixed while fixing the previous vulnerabilities.
+
 ### Fix patch
 
+Fixed while fixing the previous vulnerabilities.
+
 ### Re-test steps
+
+Run the same script in the test steps and notice how the server returns an error instead:
+
+![alt text](image-16.png)
 
 ## Bypassing access control (accessing admin pages)
 
@@ -1826,9 +1842,31 @@ The admin URL pattern in `AdminFilter` in `web.xml` is misspelled (`/adimn/*` in
 
 ### Fix explanation
 
+Correct the "adimn" typo in `web.xml`.
+
 ### Fix patch
 
+```diff
+diff --git a/src/WebContent/WEB-INF/web.xml b/src/WebContent/WEB-INF/web.xml
+index b5d02e5..f0d7940 100644
+--- a/src/WebContent/WEB-INF/web.xml
++++ b/src/WebContent/WEB-INF/web.xml
+@@ -43,7 +43,7 @@
+   </filter-mapping>
+   <filter-mapping>
+     <filter-name>AdminFilter</filter-name>
+-    <url-pattern>/adimn/*</url-pattern>
++    <url-pattern>/admin/*</url-pattern>
+     <dispatcher>FORWARD</dispatcher>
+     <dispatcher>INCLUDE</dispatcher>
+     <dispatcher>REQUEST</dispatcher>
+```
+
 ### Re-test steps
+
+Visit `/admin/admin.jsp` as an unauthorized user and notice how you are redirected back to your homepage:
+
+![alt text](image-17.png)
 
 ## Cross site scripting in `/bank/customize.jsp`
 
