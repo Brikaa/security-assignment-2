@@ -1,0 +1,13 @@
+diff --git a/src/WebContent/search.jsp b/src/WebContent/search.jsp
+index cccd7ae..47eb9b5 100644
+--- a/src/WebContent/search.jsp
++++ b/src/WebContent/search.jsp
+@@ -41,7 +41,7 @@ IBM AltoroJ
+ 		
+ 		<p>No results were found for the query:<br /><br />
+ 		
+-		<%= query %>
++		<%= ServletUtil.sanitizeWeb(query) %>
+ 		
+ 		</div>    
+     </td>	
