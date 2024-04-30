@@ -1,0 +1,56 @@
+diff --git a/src/WebContent/feedbacksuccess.jsp b/src/WebContent/feedbacksuccess.jsp
+index 0b53b24..44dd5d0 100644
+--- a/src/WebContent/feedbacksuccess.jsp
++++ b/src/WebContent/feedbacksuccess.jsp
+@@ -43,9 +43,9 @@ IBM AltoroJ
+ 		 <% String email = (String) request.getParameter("email_addr"); 
+ 		 	boolean regExMatch = email!=null && email.matches(ServletUtil.EMAIL_REGEXP);
+ 		 	if (email != null && email.trim().length() != 0 && regExMatch) {%> 
+-			 Our reply will be sent to your email: <%= ServletUtil.sanitzieHtmlWithRegex(email.toLowerCase())/*ServletUtil.sanitizeWeb(email.toLowerCase())*/%>
++			 Our reply will be sent to your email: <%=ServletUtil.sanitizeWeb(email.toLowerCase())%>
+ 		<% } else {%>
+-			However, the email you gave is incorrect (<%=ServletUtil.sanitzieHtmlWithRegex(email.toLowerCase()) /*ServletUtil.sanitizeWeb(email.toLowerCase())*/%>) and you will not receive a response.
++			However, the email you gave is incorrect (<%=ServletUtil.sanitizeWeb(email.toLowerCase())%>) and you will not receive a response.
+ 		<% }%>
+ 		</p>
+ 		<% if (ServletUtil.isAppPropertyTrue("enableFeedbackRetention")){%>
+diff --git a/src/WebContent/index.jsp b/src/WebContent/index.jsp
+index a00e710..a067d02 100644
+--- a/src/WebContent/index.jsp
++++ b/src/WebContent/index.jsp
+@@ -92,7 +92,7 @@ IBM AltoroJ
+ 				%>
+ 				<%=text %>
+ 			<%  } catch (Exception e) { %>
+-				<p>Failed due to <%= ServletUtil.sanitzieHtmlWithRegex(e.getLocalizedMessage()) %></p>
++				<p>Failed due to <%= ServletUtil.sanitizeWeb(e.getLocalizedMessage()) %></p>
+ 	 		<% } %>
+ 		<% 
+ 		} else {
+@@ -108,7 +108,7 @@ IBM AltoroJ
+ 		<%  try { %>
+ 			<jsp:include page="<%= content %>"/>
+ 		<%  } catch (Exception e) { %>
+-			<p>Failed due to <%= ServletUtil.sanitzieHtmlWithRegex(e.getLocalizedMessage()) %></p>
++			<p>Failed due to <%= ServletUtil.sanitizeWeb(e.getLocalizedMessage()) %></p>
+  		<% } 
+ 		}%>
+     </td>
+diff --git a/src/src/com/ibm/security/appscan/altoromutual/util/ServletUtil.java b/src/src/com/ibm/security/appscan/altoromutual/util/ServletUtil.java
+index 81fb326..c1833fc 100644
+--- a/src/src/com/ibm/security/appscan/altoromutual/util/ServletUtil.java
++++ b/src/src/com/ibm/security/appscan/altoromutual/util/ServletUtil.java
+@@ -243,13 +243,6 @@ public class ServletUtil {
+ 		return StringEscapeUtils.escapeHtml(data);
+ 	}
+ 
+-	public static String sanitzieHtmlWithRegex(String input) {
+-		if (XSS_REGEXP.matcher(input).matches()) {
+-			return "";
+-		}
+-		return input;
+-	}
+-
+ 	/* initializes AltoroJ demo properties table */
+ 	public static void initializeAppProperties(ServletContext servletContext) {
+ 

@@ -92,7 +92,7 @@ IBM AltoroJ
 				%>
 				<%=text %>
 			<%  } catch (Exception e) { %>
-				<p>Failed due to <%= ServletUtil.sanitzieHtmlWithRegex(e.getLocalizedMessage()) %></p>
+				<p>Failed due to <%= ServletUtil.sanitizeWeb(e.getLocalizedMessage()) %></p>
 	 		<% } %>
 		<% 
 		} else {
@@ -108,7 +108,7 @@ IBM AltoroJ
 		<%  try { %>
 			<jsp:include page="<%= content %>"/>
 		<%  } catch (Exception e) { %>
-			<p>Failed due to <%= ServletUtil.sanitzieHtmlWithRegex(e.getLocalizedMessage()) %></p>
+			<p>Failed due to <%= ServletUtil.sanitizeWeb(e.getLocalizedMessage()) %></p>
  		<% } 
 		}%>
     </td>

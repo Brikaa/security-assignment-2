@@ -243,13 +243,6 @@ public class ServletUtil {
 		return StringEscapeUtils.escapeHtml(data);
 	}
 
-	public static String sanitzieHtmlWithRegex(String input) {
-		if (XSS_REGEXP.matcher(input).matches()) {
-			return "";
-		}
-		return input;
-	}
-
 	/* initializes AltoroJ demo properties table */
 	public static void initializeAppProperties(ServletContext servletContext) {
 

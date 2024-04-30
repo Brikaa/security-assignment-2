@@ -43,9 +43,9 @@ IBM AltoroJ
 		 <% String email = (String) request.getParameter("email_addr"); 
 		 	boolean regExMatch = email!=null && email.matches(ServletUtil.EMAIL_REGEXP);
 		 	if (email != null && email.trim().length() != 0 && regExMatch) {%> 
-			 Our reply will be sent to your email: <%= ServletUtil.sanitzieHtmlWithRegex(email.toLowerCase())/*ServletUtil.sanitizeWeb(email.toLowerCase())*/%>
+			 Our reply will be sent to your email: <%=ServletUtil.sanitizeWeb(email.toLowerCase())%>
 		<% } else {%>
-			However, the email you gave is incorrect (<%=ServletUtil.sanitzieHtmlWithRegex(email.toLowerCase()) /*ServletUtil.sanitizeWeb(email.toLowerCase())*/%>) and you will not receive a response.
+			However, the email you gave is incorrect (<%=ServletUtil.sanitizeWeb(email.toLowerCase())%>) and you will not receive a response.
 		<% }%>
 		</p>
 		<% if (ServletUtil.isAppPropertyTrue("enableFeedbackRetention")){%>
